@@ -61,37 +61,70 @@ DIFV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 #連続の式DIV・圧力補正量deltapの配列設定
 DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
-#圧力から速度場を決定する場合
+#圧力から速度場を決定する場合(入り口速度場のみ指定)
 j = 1
 while 1 <= j <= n-1:
     u_old[0][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
     j += 1
 print np.max(u_old)
 
+#圧力から速度場を決定する場合(全速度場を指定)
+#i = 0
+#j = 1
+#while 0 <= i <= ms-1:
+    #while 1 <= j <= n-1:
+        #u_old[i][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
+        #j += 1
+    #j = 1
+    #i += 1
+#x=1.0の速度場のみ指定して変える場合
+#j = 1
+#while 1 <= j <= n-1:
+    #u_old[(ms-1)/2][j] = 1.0 / (2*nu*rho) * (-1.0*(-20)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
+    #j += 1
+#print np.max(u_old)
+
+#入り口圧力を指定
+j = 0
+while 0 <= j <= n:
+    p_old[0][j] = p_BoundaryAD + (p_BoundaryAD-p_BoundaryBC)/(ms-1)* 0.5
+    p_old[1][j] = p_BoundaryAD - (p_BoundaryAD-p_BoundaryBC)/(ms-1)* 0.5
+    j += 1
+
+#全圧力場を与える
+#i = 0
+#j = 0
+#while 0 <= i <= ms:
+    #while 0 <= j <= n:
+        #p_old[i][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))
+        #j += 1
+    #j = 0
+    #i += 1
+
 #境界条件の設定
 #BoundaryAD
 j = 0
 while 0 <= j <= n-1:
     #u_old[0][j] = u_BoundaryAD
-    v_old[0][j] = 2 * v_BoundaryAD - v_old[1][j]
+    v_old[0][j] = 2.0 * v_BoundaryAD - v_old[1][j]
     j += 1
 #WallAB
 i = 0
 while 0 <= i <= ms-1:
-    u_old[i][0] = 2 * u_WallAB - u_old[i][1]
+    u_old[i][0] = 2.0 * u_WallAB - u_old[i][1]
     v_old[i][0] = v_WallAB
     i += 1
 #WallCD
 i = 0
 while 0 <= i <= ms-1:
-    u_old[i][n] = 2 * u_WallCD - u_old[i][n-1]
+    u_old[i][n] = 2.0 * u_WallCD - u_old[i][n-1]
     v_old[i][n-1] = v_WallCD
     i += 1
 #BoundaryBC
 j = 0
 while 0 <= j <= n-1:
     #u_old[ms-1][j] = u_BoundaryBC
-    v_old[ms][j] = 2 * v_BoundaryBC - v_old[ms-1][j]
+    v_old[ms][j] = 2.0 * v_BoundaryBC - v_old[ms-1][j]
     j += 1
 
 
@@ -100,8 +133,33 @@ print u_old
 print v_old
 print p_old
 
-print "ここから計算開始"
+#初期値を出力
 t = 0
+#csvファイルで出力
+u_out = u_old.transpose()
+v_out = v_old.transpose()
+p_out = p_old.transpose()
+#deltap_out = deltap.transpose()
+DIV_out = DIV.transpose()
+import csv
+with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
+    writer = csv.writer(file, lineterminator = '\n')
+    writer.writerows(u_out)
+with open(os.path.join(str(value[1]),"v_(t="+str(t)+")"+".csv"), 'w') as file:
+    writer = csv.writer(file, lineterminator = '\n')
+    writer.writerows(v_out)
+with open(os.path.join(str(value[1]),"p_(t="+str(t)+")"+".csv"), 'w') as file:
+    writer = csv.writer(file, lineterminator = '\n')
+    writer.writerows(p_out)
+#with open("deltap_(t="+str(t)+")"+".csv", 'w') as file:
+    #writer = csv.writer(file, lineterminator = '\n')
+    #writer.writerows(deltap_out)
+with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
+    writer = csv.writer(file, lineterminator = '\n')
+    writer.writerows(DIV_out)
+
+print "Calculation starts"
+t = deltaT
 while t <= T:
     print "t =" + str(t)
     #u_old,v_oldの仮値を設定①粘性項・対流項配列の設定
@@ -147,6 +205,8 @@ while t <= T:
     #print "仮値のDIV"
     #print DIV
     Dmax = np.max(DIV)
+    if t <= 0.000001:#圧力補正ループに強制的に入るコード
+        Dmax = 10
     #print Dmax
     #print "u,vの仮値におけるDIVの配列設定完了"
 
@@ -171,7 +231,6 @@ while t <= T:
                 if 2 <= j:
                     v_old[i][j-1] = v_old[i][j-1] - 1.0 * omega * (1.0/rho) * (deltaT/deltay) * deltap
                 j += 1
-                print str(deltap)
             j = 1
             i += 1
         j = 1
@@ -182,22 +241,22 @@ while t <= T:
         #BoundaryAD
         j = 1
         while 1 <= j <= n-2:
-            v_old[0][j] = 2 * v_BoundaryAD - v_old[1][j]
+            v_old[0][j] = 2.0 * v_BoundaryAD - v_old[1][j]
             j += 1
         #WallAB
         i = 1
         while 1 <= i <= ms-2:
-            u_old[i][0] = 2 * u_WallAB - u_old[i][1]
+            u_old[i][0] = 2.0 * u_WallAB - u_old[i][1]
             i += 1
         #WallCD
         i = 1
         while 1 <= i <= ms-2:
-            u_old[i][n] = 2 * u_WallCD - u_old[i][n-1]
+            u_old[i][n] = 2.0 * u_WallCD - u_old[i][n-1]
             i += 1
         #BoundaryBC
         j = 1
         while 1 <= j <= n-2:
-            v_old[ms][j] = 2 * v_BoundaryBC - v_old[ms-1][j]
+            v_old[ms][j] = 2.0 * v_BoundaryBC - v_old[ms-1][j]
             j += 1
         #連続の式の収束条件
         i = 1
@@ -261,7 +320,7 @@ while t <= T:
 
     #時間を進める
     t = t + deltaT
-print "計算終了"
+print "Calculation ends"
 
 #物性値、定数の出力
 conditionlist = [["rho",0],["nu",0],["H",0],["L",0],["T",0],["deltaT",0],["deltax",0],["deltay",0],["omega",0],["M",0]]
