@@ -5,22 +5,44 @@ import matplotlib.pyplot as plt
 from numpy.random import *
 from matplotlib import animation
 import os
+import csv
 import sys
 value = sys.argv
 os.mkdir(str(value[1]))
+import time
+start_time = time.time()
 
 #物性値
-rho = 1000.0 #密度[kg/m^3]
-nu = 0.000001#動粘度[m^2/s]
+print "物性値入力"
+rho = input("rho(流体密度)[kg/m^3] = ")
+nu = input("nu（動粘性係数）[m^2/s] = ")
+
 #定数
-H =0.1#流れ場のy方向の長さ
-L =2.0#流れ場のx方向の長さ
-T = 0.000005#移流時間
-deltaT = 0.000001#時間刻み
-deltax = 0.0025#x方向の要素間距離
-deltay = 0.0025#y方向の要素間距離
-omega = 0.5#圧力補正における緩和係数
-M = 0.001#連続の式の収束条件
+print "定数入力"
+H = input("H(流れ場y方向長さ)[m] = ")
+L = input("L(流れ場x方向長さ)[m] = ")
+T = input("T(移流時間)[s] = ")
+deltaT = input("deltaT(時間刻み)[s] = ")
+deltax = input("deltax(x方向要素間距離)[m] = ")
+deltay = input("deltay(y方向要素間距離)[m] = ")
+omega = input("omega(緩和係数) = ")
+M = input("M(連続の式収束条件) = ")
+
+#物性値、定数の出力
+constant_list = [["rho",0],["nu",0],["H",0],["L",0],["T",0],["deltaT",0],["deltax",0],["deltay",0],["omega",0],["M",0]]
+constant_list[0][1] = rho
+constant_list[1][1] = nu
+constant_list[2][1] = H
+constant_list[3][1] = L
+constant_list[4][1] = T
+constant_list[5][1] = deltaT
+constant_list[6][1] = deltax
+constant_list[7][1] = deltay
+constant_list[8][1] = omega
+constant_list[9][1] = M
+with open(os.path.join(str(value[1]),"constant.csv"), 'w') as file:
+    writer = csv.writer(file, lineterminator = '\n')
+    writer.writerows(constant_list)
 
 #流れ場の座標(ms,n)
 ms = int(L / deltax + 1)
@@ -31,7 +53,7 @@ print "n :" + str(n)
 #初期条件
 u_BoundaryAD = 0.0#x方向速度[m/s]@inlet
 v_BoundaryAD = 0.0#y方向速度[m/s]@inlet
-p_BoundaryAD = 100.0#圧力{Pa}@inlet
+p_BoundaryAD = 0.0006#圧力[Pa]@inlet
 
 u_WallAB = 0.0#x方向速度[m/s]@wallAB
 v_WallAB = 0.0#x方向速度[m/s]@wallAB
@@ -98,7 +120,6 @@ while 0 <= i <= ms:
 #BoundaryAD
 j = 0
 while 0 <= j <= n-1:
-    #u_old[0][j] = u_BoundaryAD
     v_old[0][j] = 2.0 * v_BoundaryAD - v_old[1][j]
     j += 1
 #WallAB
@@ -116,15 +137,8 @@ while 0 <= i <= ms-1:
 #BoundaryBC
 j = 0
 while 0 <= j <= n-1:
-    #u_old[ms-1][j] = u_BoundaryBC
     v_old[ms][j] = 2.0 * v_BoundaryBC - v_old[ms-1][j]
     j += 1
-
-
-#初期条件の確認
-print u_old
-print v_old
-print p_old
 
 #初期値を出力
 t = 0
@@ -155,7 +169,7 @@ print "Calculation starts"
 t = deltaT
 while t <= T:
     print "t =" + str(t)
-    #u_old,v_oldの仮値を設定①粘性項・対流項配列の設定
+    #u_old,v_old仮値設定①粘性項・対流項配列の設定
     i = 1
     j = 1
     while 1 <= i <= ms-1:
@@ -167,7 +181,7 @@ while t <= T:
             j += 1
         j = 1
         i += 1
-    #u_old,v_oldの仮値を設定②ナビエストークス方程式を解く
+    #u_old,v_old仮値設定②ナビエストークス方程式を解く
     i = 1
     j = 1
     while 1 <= i <= ms-2:
@@ -182,39 +196,20 @@ while t <= T:
             j += 1
         j = 1
         i += 1
-    #print u_old
-    #print v_old
-    #print "u,vの仮値設定完了"
 
-    #u,vの仮値におけるDIVを設定
-    i = 1
-    j = 1
-    while 1 <= i <= ms-1:
-        while 1 <= j <= n-1:
-            DIV[i][j] = abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax) + abs((v_old[i][j] - v_old[i][j-1])*1.0/deltay)
-            j += 1
-        j = 1
-        i += 1
-    #print "仮値のDIV"
-    #print DIV
-    Dmax = np.max(DIV)
-    if t <= 0.000001:#圧力補正ループに強制的に入るコード
-        Dmax = 10
-    #print Dmax
-    #print "u,vの仮値におけるDIVの配列設定完了"
-
-    #圧力補正量の導出
-    m = 1#反復回数
+    #圧力補正ループ
+    m = 1
+    Dmax = M + 1
     while Dmax > M :
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
-        print "m=" + str(m)
-        print "Dmax = " + str(Dmax)
+        if m % 10 == 0:
+            print "m = " + str(m)
         i = 1
         j = 1
         while 1 <= i <= ms-1:
             while 1 <= j <= n-1:
-                deltap = -rho*1.0/(2*deltaT)*(deltax * deltay)/(deltax**2 + deltay**2)*(deltay*(u_old[i][j]-u_old[i-1][j])+deltax*(v_old[i][j]-v_old[i][j-1]))
-                p_old[i][j] = p_old[i][j] + (omega * deltap)
+                deltap = - rho * 1.0 / (2*deltaT) * (deltax*deltay) / (deltax**2+deltay**2) * (deltay * (u_old[i][j]-u_old[i-1][j]) + deltax * (v_old[i][j]-v_old[i][j-1]))
+                p_old[i][j] = p_old[i][j] + 1.0 * omega * deltap
                 if i <= ms-2:
                     u_old[i][j] = u_old[i][j] + 1.0 * omega * (1.0/rho) * (deltaT/deltax) * deltap
                 if j <= n-2:
@@ -226,10 +221,6 @@ while t <= T:
                 j += 1
             j = 1
             i += 1
-        j = 1
-        #print u_old
-        #print v_old
-        #print p_old
         #境界条件の適用
         #BoundaryAD
         j = 1
@@ -256,13 +247,12 @@ while t <= T:
         j = 1
         while 1 <= i <= ms-1:
             while 1 <= j <= n-1:
-                DIV[i][j] = abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax) + abs((v_old[i][j] - v_old[i][j-1])*1.0/deltay)
+                DIV[i][j] = ((u_old[i][j] - u_old[i-1][j])*1.0/deltax) + ((v_old[i][j] - v_old[i][j-1])*1.0/deltay)
                 j += 1
             j = 1
             i += 1
-        #print DIV
         #---通常モード---
-        #Dmax = np.max(DIV)
+        Dmax = np.max(DIV)
         #---↑---
         #---↓Dmaxの発散を検知したら補正ループを終了する↓---
         #Dmax_new = np.max(DIV)
@@ -278,23 +268,26 @@ while t <= T:
                 #print "Converging now"
         #---↑---
         #---↓圧力補正計算を回数で制御する↓---
-        Dmax_new = np.max(DIV)
-        if m >100:
-            print  "stop at m = " + str(m) +"(Dmax = " + str(Dmax_new) + ")"
-            Dmax = 0
-        else:
-            Dmax = Dmax_new
-            print "Converging now"
+        #Dmax_new = np.max(DIV)
+        #if m >200:
+            #print  "stop at m = " + str(m) +"(Dmax = " + str(Dmax_new) + ")"
+            #Dmax = 0
+        #else:
+            #Dmax = Dmax_new
+            #print "Converging now"
         #---↑---
+        if m % 10 == 0:
+            print "Dmax = " + str(Dmax)
+            print "deltap = " + str(deltap)
+            process_time = time.time() - start_time
+            print "process_time = " + str(process_time)
         m += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルで出力
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
-    #deltap_out = deltap.transpose()
     DIV_out = DIV.transpose()
-    import csv
     with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerows(u_out)
@@ -314,19 +307,3 @@ while t <= T:
     #時間を進める
     t = t + deltaT
 print "Calculation ends"
-
-#物性値、定数の出力
-conditionlist = [["rho",0],["nu",0],["H",0],["L",0],["T",0],["deltaT",0],["deltax",0],["deltay",0],["omega",0],["M",0]]
-conditionlist[0][1] = rho
-conditionlist[1][1] = nu
-conditionlist[2][1] = H
-conditionlist[3][1] = L
-conditionlist[4][1] = T
-conditionlist[5][1] = deltaT
-conditionlist[6][1] = deltax
-conditionlist[7][1] = deltay
-conditionlist[8][1] = omega
-conditionlist[9][1] = M
-with open(os.path.join(str(value[1]),"condition.csv"), 'w') as file:
-    writer = csv.writer(file, lineterminator = '\n')
-    writer.writerows(conditionlist)

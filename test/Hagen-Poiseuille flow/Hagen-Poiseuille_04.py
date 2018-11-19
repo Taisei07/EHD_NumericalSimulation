@@ -8,6 +8,7 @@ import os
 import csv
 import sys
 value = sys.argv
+os.chdir('/media/pascal/HD-GDU3/Tajima_backup/EHD/result')
 os.mkdir(str(value[1]))
 import time
 start_time = time.time()
@@ -53,7 +54,7 @@ print "n :" + str(n)
 #初期条件
 u_BoundaryAD = 0.0#x方向速度[m/s]@inlet
 v_BoundaryAD = 0.0#y方向速度[m/s]@inlet
-p_BoundaryAD = 0.0006#圧力[Pa]@inlet
+p_BoundaryAD = 3#圧力[Pa]@inlet
 
 u_WallAB = 0.0#x方向速度[m/s]@wallAB
 v_WallAB = 0.0#x方向速度[m/s]@wallAB
@@ -83,22 +84,31 @@ DIFV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 #連続の式DIV・圧力補正量deltapの配列設定
 DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
-#圧力から速度場を決定する場合(入り口速度場のみ指定)
+#圧力から速度場を決定する場合(全速度場指定)
+i = 0
 j = 1
-while 1 <= j <= n-1:
-    u_old[0][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-    j += 1
+while 0 <= i <= ms-1:
+    while 1 <= j <= n-1:
+        u_old[i][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
+        j += 1
+    j = 1
+    i += 1
 
-#入り口圧力場のみ与える
+#全圧力場指定
+i = 0
 j = 0
-while 0 <= j <= n:
-    p_old[0][j] = p_BoundaryAD
-    j += 1
+while 0 <= i <= ms:
+    while 0 <= j <= n:
+        p_old[i][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))
+        j += 1
+    j = 0
+    i += 1
 
 #境界条件の設定
 #BoundaryAD
 j = 0
 while 0 <= j <= n-1:
+    u_old[0][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
     v_old[0][j] = 2.0 * v_BoundaryAD - v_old[1][j]
     j += 1
 #WallAB
@@ -116,6 +126,7 @@ while 0 <= i <= ms-1:
 #BoundaryBC
 j = 0
 while 0 <= j <= n-1:
+    u_old[ms-1][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
     v_old[ms][j] = 2.0 * v_BoundaryBC - v_old[ms-1][j]
     j += 1
 

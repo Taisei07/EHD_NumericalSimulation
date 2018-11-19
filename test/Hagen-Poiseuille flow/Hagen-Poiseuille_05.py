@@ -8,6 +8,7 @@ import os
 import csv
 import sys
 value = sys.argv
+os.chdir('/media/pascal/HD-GDU3/Tajima_backup/EHD/result')
 os.mkdir(str(value[1]))
 import time
 start_time = time.time()
@@ -53,7 +54,7 @@ print "n :" + str(n)
 #初期条件
 u_BoundaryAD = 0.0#x方向速度[m/s]@inlet
 v_BoundaryAD = 0.0#y方向速度[m/s]@inlet
-p_BoundaryAD = 0.0006#圧力[Pa]@inlet
+p_BoundaryAD = 3#圧力[Pa]@inlet
 
 u_WallAB = 0.0#x方向速度[m/s]@wallAB
 v_WallAB = 0.0#x方向速度[m/s]@wallAB
@@ -92,7 +93,8 @@ while 1 <= j <= n-1:
 #入り口圧力場のみ与える
 j = 0
 while 0 <= j <= n:
-    p_old[0][j] = p_BoundaryAD
+    p_old[0][j] = p_BoundaryAD + (p_BoundaryAD-p_BoundaryBC)/(ms-1)/2
+    p_old[1][j] = p_BoundaryAD - (p_BoundaryAD-p_BoundaryBC)/(ms-1)/2
     j += 1
 
 #境界条件の設定

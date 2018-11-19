@@ -84,21 +84,43 @@ DIFV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #圧力から速度場を決定する場合(入り口速度場のみ指定)
-j = 1
-while 1 <= j <= n-1:
-    u_old[0][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-    j += 1
+#j = 1
+#while 1 <= j <= n-1:
+    #u_old[0][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
+    #j += 1
+#print np.max(u_old)
 
-#入り口圧力場のみ与える
+#圧力から速度場を決定する場合(全速度場を指定)
+i = 0
+j = 1
+while 0 <= i <= ms-1:
+    while 1 <= j <= n-1:
+        u_old[i][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
+        j += 1
+    j = 1
+    i += 1
+#x=1.0の速度場のみ指定して変える場合
+#j = 1
+#while 1 <= j <= n-1:
+    #u_old[(ms-1)/2][j] = 1.0 / (2*nu*rho) * (-1.0*(-20)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
+    #j += 1
+print np.max(u_old)
+
+#全圧力場を与える
+i = 0
 j = 0
-while 0 <= j <= n:
-    p_old[0][j] = p_BoundaryAD
-    j += 1
+while 0 <= i <= ms:
+    while 0 <= j <= n:
+        p_old[i][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))
+        j += 1
+    j = 0
+    i += 1
 
 #境界条件の設定
 #BoundaryAD
 j = 0
 while 0 <= j <= n-1:
+    u_old[0][j] = 2.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
     v_old[0][j] = 2.0 * v_BoundaryAD - v_old[1][j]
     j += 1
 #WallAB
@@ -116,16 +138,9 @@ while 0 <= i <= ms-1:
 #BoundaryBC
 j = 0
 while 0 <= j <= n-1:
+    u_old[ms-1][j] = 2.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
     v_old[ms][j] = 2.0 * v_BoundaryBC - v_old[ms-1][j]
     j += 1
-
-#初期におけるDIV
-while 1 <= i <= ms-1:
-    while 1 <= j <= n-1:
-        DIV[i][j] = abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay)
-        j += 1
-    j = 1
-    i += 1
 
 #初期値を出力
 t = 0
@@ -189,7 +204,8 @@ while t <= T:
     Dmax = M + 1
     while Dmax > M :
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
-        print "m = " + str(m)
+        if m % 10 == 0:
+            print "m = " + str(m)
         i = 1
         j = 1
         while 1 <= i <= ms-1:
@@ -233,7 +249,7 @@ while t <= T:
         j = 1
         while 1 <= i <= ms-1:
             while 1 <= j <= n-1:
-                DIV[i][j] = abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay)
+                DIV[i][j] = ((u_old[i][j] - u_old[i-1][j])*1.0/deltax) + ((v_old[i][j] - v_old[i][j-1])*1.0/deltay)
                 j += 1
             j = 1
             i += 1
@@ -262,10 +278,11 @@ while t <= T:
             #Dmax = Dmax_new
             #print "Converging now"
         #---↑---
-        print "Dmax = " + str(Dmax)
-        print "deltap = " + str(deltap)
-        process_time = time.time() - start_time
-        print "process_time = " + str(process_time)
+        if m % 10 == 0:
+            print "Dmax = " + str(Dmax)
+            print "deltap = " + str(deltap)
+            process_time = time.time() - start_time
+            print "process_time = " + str(process_time)
         m += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルで出力
