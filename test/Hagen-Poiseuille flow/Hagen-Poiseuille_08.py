@@ -47,7 +47,7 @@ print "n :" + str(n)
 #初期条件
 u_BoundaryAD = 0.0#x方向速度[m/s]@inlet
 v_BoundaryAD = 0.0#y方向速度[m/s]@inlet
-p_BoundaryAD = 3#圧力[Pa]@inlet
+p_BoundaryAD = 0.0#圧力[Pa]@inlet
 
 u_WallAB = 0.0#x方向速度[m/s]@wallAB
 v_WallAB = 0.0#x方向速度[m/s]@wallAB
@@ -77,52 +77,55 @@ DIFV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 #連続の式DIV・圧力補正量deltapの配列設定
 DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
-#圧力から速度場を決定する場合(全速度場指定)
-i = 0
-j = 1
-while 0 <= i <= ms-1:
-    while 1 <= j <= n-1:
-        u_old[i][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-        j += 1
+#圧力から速度場を決定する場合
+if p_BoundaryAD != p_BoundaryBC:
+    #速度場設定
+    i = 0
     j = 1
-    i += 1
-
-#全圧力場指定
-i = 0
-j = 0
-while 0 <= i <= ms:
-    while 0 <= j <= n:
-        p_old[i][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))
-        j += 1
+    while 0 <= i <= ms-1:
+        while 1 <= j <= n-1:
+            u_old[i][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
+            j += 1
+        j = 1
+        i += 1
+    #圧力場指定
+    i = 0
     j = 0
-    i += 1
+    while 0 <= i <= ms:
+        while 0 <= j <= n:
+            p_old[i][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))
+            j += 1
+        j = 0
+        i += 1
 
 #境界条件の設定
 #BoundaryAD
 j = 0
 while 0 <= j <= n-1:
-    u_old[0][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-    v_old[0][j] = 2.0 * v_BoundaryAD - v_old[1][j]
-    p_old[0][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*0.5)
-    p_old[1][j] = p_BoundaryAD - ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*0.5)
+    u_old[0][j] = u_old[1][j]
+    v_old[0][j] = v_old[1][j]
+    p_old[0][j] = p_old[1][j]
     j += 1
 #WallAB
 i = 0
 while 0 <= i <= ms-1:
-    u_old[i][0] = 2.0 * u_WallAB - u_old[i][1]
+    u_old[i][0] = -u_old[i][1]
     v_old[i][0] = v_WallAB
+    p_old[i][0] = p_old[i][1]
     i += 1
 #WallCD
 i = 0
 while 0 <= i <= ms-1:
-    u_old[i][n] = 2.0 * u_WallCD - u_old[i][n-1]
+    u_old[i][n] = -u_old[i][n-1]
     v_old[i][n-1] = v_WallCD
+    p_old[i][n] = p_old[i][n-1]
     i += 1
 #BoundaryBC
 j = 0
 while 0 <= j <= n-1:
-    u_old[ms-1][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-    v_old[ms][j] = 2.0 * v_BoundaryBC - v_old[ms-1][j]
+    u_old[ms-1][j] = u_old[ms-2][j]
+    v_old[ms][j] = v_old[ms-1][j]
+    p_old[ms][j] = p_old[ms-1][j]
     j += 1
 
 #初期におけるDIV
@@ -224,28 +227,30 @@ while t <= T:
         #BoundaryAD
         j = 0
         while 0 <= j <= n-1:
-            u_old[0][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-            v_old[0][j] = 2.0 * v_BoundaryAD - v_old[1][j]
-            p_old[0][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*0.5)
-            p_old[1][j] = p_BoundaryAD - ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*0.5)
+            u_old[0][j] = u_old[1][j]
+            v_old[0][j] = v_old[1][j]
+            p_old[0][j] = p_old[1][j]
             j += 1
         #WallAB
         i = 0
         while 0 <= i <= ms-1:
-            u_old[i][0] = 2.0 * u_WallAB - u_old[i][1]
+            u_old[i][0] = -u_old[i][1]
             v_old[i][0] = v_WallAB
+            p_old[i][0] = p_old[i][1]
             i += 1
         #WallCD
         i = 0
         while 0 <= i <= ms-1:
-            u_old[i][n] = 2.0 * u_WallCD - u_old[i][n-1]
+            u_old[i][n] = -u_old[i][n-1]
             v_old[i][n-1] = v_WallCD
+            p_old[i][n] = p_old[i][n-1]
             i += 1
         #BoundaryBC
         j = 0
         while 0 <= j <= n-1:
-            u_old[ms-1][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-            v_old[ms][j] = 2.0 * v_BoundaryBC - v_old[ms-1][j]
+            u_old[ms-1][j] = u_old[ms-2][j]
+            v_old[ms][j] = v_old[ms-1][j]
+            p_old[ms][j] = p_old[ms-1][j]
             j += 1
         #連続の式の収束条件
         i = 1
