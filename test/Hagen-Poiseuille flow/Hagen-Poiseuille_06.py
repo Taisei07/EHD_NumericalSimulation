@@ -190,6 +190,8 @@ while t <= T:
             j += 1
         j = 1
         i += 1
+    i = 1
+    j = 1
     while 1 <= i <= ms-1 :
         while 1 <= j <= n-2:
             v_old[i][j] = v_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i][j+1]-p_old[i][j])/deltay - CNVV[i][j] + DIFV[i][j])
