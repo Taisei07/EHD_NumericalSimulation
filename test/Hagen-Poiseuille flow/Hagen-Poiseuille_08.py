@@ -183,7 +183,7 @@ while t <= T:
     while 1 <= i <= ms-2:
         while 1 <= j <= n-1:
             if Fx_electrode != 0 and ms*45.0/100 <= i <= ms*55.0/100 and 1 <= j <= 3:
-                u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j]+ Fx_electrode)
+                u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j]+ 1.0 / rho * Fx_electrode)
             else:
                 u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j])
             j += 1
