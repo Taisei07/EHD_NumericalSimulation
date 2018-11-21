@@ -202,13 +202,14 @@ while t <= T:
     Dmax = M + 1
     while Dmax > M :
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
+        print "t = " + str(t)
         print "m = " + str(m)
         i = 1
         j = 1
         while 1 <= i <= ms-1:
             while 1 <= j <= n-1:
                 deltap = - rho * 1.0 / (2*deltaT) * (deltax*deltay) / (deltax**2+deltay**2) * (deltay * (u_old[i][j]-u_old[i-1][j]) + deltax * (v_old[i][j]-v_old[i][j-1]))
-                p_old[i][j] = p_old[i][j] + 1.0 * omega * deltap / rho
+                p_old[i][j] = p_old[i][j] + 1.0 * omega * deltap
                 if i <= ms-2:
                     u_old[i][j] = u_old[i][j] + 1.0 * omega * (1.0/rho) * (deltaT/deltax) * deltap
                 if j <= n-2:
