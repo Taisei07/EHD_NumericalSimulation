@@ -3,7 +3,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.random import *
-from matplotlib import animation
 import os
 import csv
 import sys
@@ -31,7 +30,7 @@ gamma = input("gamma(圧力補正緩和係数) = ")
 M = input("M(連続の式収束条件) = ")
 
 #物性値、定数の出力
-constant_list = [["rho",0],["nu",0],["H",0],["L",0],["T",0],["deltaT",0],["deltax",0],["deltay",0],["omega",0],["M",0]]
+constant_list = [["rho",0],["nu",0],["H",0],["L",0],["T",0],["deltaT",0],["deltax",0],["deltay",0],["omega",0],["gamma", 0],["M",0]]
 constant_list[0][1] = rho
 constant_list[1][1] = nu
 constant_list[2][1] = H
@@ -41,7 +40,8 @@ constant_list[5][1] = deltaT
 constant_list[6][1] = deltax
 constant_list[7][1] = deltay
 constant_list[8][1] = omega
-constant_list[9][1] = M
+constant_list[9][1] = gamma
+constant_list[10][1] = M
 with open(os.path.join(str(value[1]),"constant.csv"), 'w') as file:
     writer = csv.writer(file, lineterminator = '\n')
     writer.writerows(constant_list)
@@ -52,7 +52,7 @@ n = int(H / deltay + 1)
 print "ms :" + str(ms)
 print "n :" + str(n)
 
-#初期条件
+#境界における初期値
 u_BoundaryAD = 0.0#x方向速度[m/s]@inlet
 v_BoundaryAD = 0.0#y方向速度[m/s]@inlet
 p_BoundaryAD = 3#圧力[Pa]@inlet
@@ -86,52 +86,56 @@ DIFV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #圧力から速度場を決定する場合(全速度場指定)
-i = 0
-j = 1
-while 0 <= i <= ms-1:
-    while 1 <= j <= n-1:
-        u_old[i][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-        j += 1
+def u_allsetting():
+    i = 0
     j = 1
-    i += 1
+    while 0 <= i <= ms-1:
+        while 1 <= j <= n-1:
+            u_old[i][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
+            j += 1
+        j = 1
+        i += 1
+u_allsetting()
 
 #全圧力場指定
-i = 0
-j = 0
-while 0 <= i <= ms:
-    while 0 <= j <= n:
-        p_old[i][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))
-        j += 1
+def p_allsetting():
+    i = 0
     j = 0
-    i += 1
+    while 0 <= i <= ms:
+        while 0 <= j <= n:
+            p_old[i][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))
+            j += 1
+        j = 0
+        i += 1
+p_allsetting()
 
 #境界条件の設定
-#BoundaryAD
-j = 0
-while 0 <= j <= n-1:
-    u_old[0][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-    v_old[0][j] = 2.0 * v_BoundaryAD - v_old[1][j]
-    p_old[0][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*0.5)
-    p_old[1][j] = p_BoundaryAD - ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*0.5)
-    j += 1
-#WallAB
-i = 0
-while 0 <= i <= ms-1:
-    u_old[i][0] = 2.0 * u_WallAB - u_old[i][1]
-    v_old[i][0] = v_WallAB
-    i += 1
-#WallCD
-i = 0
-while 0 <= i <= ms-1:
-    u_old[i][n] = 2.0 * u_WallCD - u_old[i][n-1]
-    v_old[i][n-1] = v_WallCD
-    i += 1
-#BoundaryBC
-j = 0
-while 0 <= j <= n-1:
-    u_old[ms-1][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-    v_old[ms][j] = 2.0 * v_BoundaryBC - v_old[ms-1][j]
-    j += 1
+def boundary_condition():
+    #BoundaryAD
+    j = 0
+    while 0 <= j <= n-1:
+        u_old[0][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
+        v_old[0][j] = 2.0 * v_BoundaryAD - v_old[1][j]
+        j += 1
+    #WallAB
+    i = 0
+    while 0 <= i <= ms-1:
+        u_old[i][0] = 2.0 * u_WallAB - u_old[i][1]
+        v_old[i][0] = v_WallAB
+        i += 1
+    #WallCD
+    i = 0
+    while 0 <= i <= ms-1:
+        u_old[i][n] = 2.0 * u_WallCD - u_old[i][n-1]
+        v_old[i][n-1] = v_WallCD
+        i += 1
+    #BoundaryBC
+    j = 0
+    while 0 <= j <= n-1:
+        u_old[ms-1][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
+        v_old[ms][j] = 2.0 * v_BoundaryBC - v_old[ms-1][j]
+        j += 1
+boundary_condition()
 
 #初期におけるDIV
 while 1 <= i <= ms-1:
@@ -141,30 +145,50 @@ while 1 <= i <= ms-1:
     j = 1
     i += 1
 
-#初期値を出力
 t = 0
+
 #csvファイルで出力
-u_out = u_old.transpose()
-v_out = v_old.transpose()
-p_out = p_old.transpose()
-#deltap_out = deltap.transpose()
-DIV_out = DIV.transpose()
-import csv
-with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
-    writer = csv.writer(file, lineterminator = '\n')
-    writer.writerows(u_out)
-with open(os.path.join(str(value[1]),"v_(t="+str(t)+")"+".csv"), 'w') as file:
-    writer = csv.writer(file, lineterminator = '\n')
-    writer.writerows(v_out)
-with open(os.path.join(str(value[1]),"p_(t="+str(t)+")"+".csv"), 'w') as file:
-    writer = csv.writer(file, lineterminator = '\n')
-    writer.writerows(p_out)
-#with open("deltap_(t="+str(t)+")"+".csv", 'w') as file:
-    #writer = csv.writer(file, lineterminator = '\n')
-    #writer.writerows(deltap_out)
-with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
-    writer = csv.writer(file, lineterminator = '\n')
-    writer.writerows(DIV_out)
+def csvout():
+    u_out = u_old.transpose()
+    v_out = v_old.transpose()
+    p_out = p_old.transpose()
+    DIV_out = DIV.transpose()
+    import csv
+    with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(u_out)
+    with open(os.path.join(str(value[1]),"v_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(v_out)
+    with open(os.path.join(str(value[1]),"p_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(p_out)
+    with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(DIV_out)
+csvout()
+
+#グラフを作成して保存する
+def graph():
+    u_out = u_old.transpose()
+    v_out = v_old.transpose()
+    p_out = p_old.transpose()
+    os.chdir(str(value[1]))
+    #速度ベクトル作成
+    plt.quiver(u_out, v_out, angles='xy', scale_units='xy', scale=1)
+    plt.xlim([-1.0*ms/10, 11.0*ms/10])
+    plt.ylim([-1.0*n/10, 11.0*n/10])
+    plt.grid()
+    plt.draw()
+    plt.savefig("velocity(t=" + str(t) + ").jpg")
+    #圧力分布作成
+    plt.imshow(p_out)
+    plt.colorbar()
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.savefig("pressure(t=" + str(t) + ").jpg")
+    os.chdir('../')
+graph()
 
 print "Calculation starts"
 t = deltaT
@@ -224,33 +248,9 @@ while t <= T:
                 j += 1
             j = 1
             i += 1
-        #境界条件の設定
-        #BoundaryAD
-        j = 0
-        while 0 <= j <= n-1:
-            u_old[0][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-            v_old[0][j] = 2.0 * v_BoundaryAD - v_old[1][j]
-            p_old[0][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*0.5)
-            p_old[1][j] = p_BoundaryAD - ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*0.5)
-            j += 1
-        #WallAB
-        i = 0
-        while 0 <= i <= ms-1:
-            u_old[i][0] = 2.0 * u_WallAB - u_old[i][1]
-            v_old[i][0] = v_WallAB
-            i += 1
-        #WallCD
-        i = 0
-        while 0 <= i <= ms-1:
-            u_old[i][n] = 2.0 * u_WallCD - u_old[i][n-1]
-            v_old[i][n-1] = v_WallCD
-            i += 1
-        #BoundaryBC
-        j = 0
-        while 0 <= j <= n-1:
-            u_old[ms-1][j] = 1.2 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-            v_old[ms][j] = 2.0 * v_BoundaryBC - v_old[ms-1][j]
-            j += 1
+
+        boundary_condition()
+
         #連続の式の収束条件
         i = 1
         j = 1
@@ -291,27 +291,10 @@ while t <= T:
         print "process_time = " + str(process_time)
         m += 1
         #Dmax = 0#強制的ループ終了用
-    #csvファイルで出力
+    #csvファイルとグラフを出力
     if t == deltaT or int(t/deltaT) % 100 == 0:
-        u_out = u_old.transpose()
-        v_out = v_old.transpose()
-        p_out = p_old.transpose()
-        DIV_out = DIV.transpose()
-        with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(u_out)
-        with open(os.path.join(str(value[1]),"v_(t="+str(t)+")"+".csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(v_out)
-        with open(os.path.join(str(value[1]),"p_(t="+str(t)+")"+".csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(p_out)
-        #with open("deltap_(t="+str(t)+")"+".csv", 'w') as file:
-            #writer = csv.writer(file, lineterminator = '\n')
-            #writer.writerows(deltap_out)
-        with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(DIV_out)
+        csvout()
+        graph()
 
     #時間を進める
     t = t + deltaT

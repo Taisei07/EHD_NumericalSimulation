@@ -139,27 +139,48 @@ while 1 <= i <= ms-1:
 #初期値を出力
 t = 0
 #csvファイルで出力
-u_out = u_old.transpose()
-v_out = v_old.transpose()
-p_out = p_old.transpose()
-#deltap_out = deltap.transpose()
-DIV_out = DIV.transpose()
-import csv
-with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
-    writer = csv.writer(file, lineterminator = '\n')
-    writer.writerows(u_out)
-with open(os.path.join(str(value[1]),"v_(t="+str(t)+")"+".csv"), 'w') as file:
-    writer = csv.writer(file, lineterminator = '\n')
-    writer.writerows(v_out)
-with open(os.path.join(str(value[1]),"p_(t="+str(t)+")"+".csv"), 'w') as file:
-    writer = csv.writer(file, lineterminator = '\n')
-    writer.writerows(p_out)
-#with open("deltap_(t="+str(t)+")"+".csv", 'w') as file:
-    #writer = csv.writer(file, lineterminator = '\n')
-    #writer.writerows(deltap_out)
-with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
-    writer = csv.writer(file, lineterminator = '\n')
-    writer.writerows(DIV_out)
+def csvout():
+    u_out = u_old.transpose()
+    v_out = v_old.transpose()
+    p_out = p_old.transpose()
+    DIV_out = DIV.transpose()
+    import csv
+    with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(u_out)
+    with open(os.path.join(str(value[1]),"v_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(v_out)
+    with open(os.path.join(str(value[1]),"p_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(p_out)
+    with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(DIV_out)
+csvout()
+
+#グラフを作成して保存する
+#グラフを作成して保存する
+def graph():
+    u_out = u_old.transpose()
+    v_out = v_old.transpose()
+    p_out = p_old.transpose()
+    os.chdir(str(value[1]))
+    #速度ベクトル作成
+    plt.quiver(u_out, v_out, angles='xy', scale_units='xy', scale=1)
+    plt.xlim([-1.0*ms/10, 11.0*ms/10])
+    plt.ylim([-1.0*n/10, 11.0*n/10])
+    plt.grid()
+    plt.draw()
+    plt.savefig("velocity(t=" + str(t) + ").jpg")
+    #圧力分布作成
+    plt.imshow(p_out)
+    plt.colorbar()
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.savefig("pressure(t=" + str(t) + ").jpg")
+    os.chdir('../')
+graph()
 
 print "Calculation starts"
 t = deltaT
@@ -294,25 +315,8 @@ while t <= T:
         #Dmax = 0#強制的ループ終了用
     #csvファイルで出力
     if t == deltaT or int(t/deltaT) % 100 == 0:
-        u_out = u_old.transpose()
-        v_out = v_old.transpose()
-        p_out = p_old.transpose()
-        DIV_out = DIV.transpose()
-        with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(u_out)
-        with open(os.path.join(str(value[1]),"v_(t="+str(t)+")"+".csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(v_out)
-        with open(os.path.join(str(value[1]),"p_(t="+str(t)+")"+".csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(p_out)
-        #with open("deltap_(t="+str(t)+")"+".csv", 'w') as file:
-            #writer = csv.writer(file, lineterminator = '\n')
-            #writer.writerows(deltap_out)
-        with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(DIV_out)
+        csvout()
+        graph()
 
     #時間を進める
     t = t + deltaT
