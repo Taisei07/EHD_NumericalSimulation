@@ -99,34 +99,36 @@ if p_BoundaryAD != p_BoundaryBC:
         i += 1
 
 #境界条件の設定
-#BoundaryAD
-j = 0
-while 0 <= j <= n-1:
-    u_old[0][j] = u_old[1][j]
-    v_old[0][j] = v_old[1][j]
-    p_old[0][j] = p_old[1][j]
-    j += 1
-#WallAB
-i = 0
-while 0 <= i <= ms-1:
-    u_old[i][0] = -u_old[i][1]
-    v_old[i][0] = v_WallAB
-    p_old[i][0] = p_old[i][1]
-    i += 1
-#WallCD
-i = 0
-while 0 <= i <= ms-1:
-    u_old[i][n] = -u_old[i][n-1]
-    v_old[i][n-1] = v_WallCD
-    p_old[i][n] = p_old[i][n-1]
-    i += 1
-#BoundaryBC
-j = 0
-while 0 <= j <= n-1:
-    u_old[ms-1][j] = u_old[ms-2][j]
-    v_old[ms][j] = v_old[ms-1][j]
-    p_old[ms][j] = p_old[ms-1][j]
-    j += 1
+def boundary_condition():
+    #BoundaryAD
+    j = 0
+    while 0 <= j <= n-1:
+        u_old[0][j] = u_old[1][j]
+        v_old[0][j] = v_old[1][j]
+        p_old[0][j] = p_old[1][j]
+        j += 1
+    #WallAB
+    i = 0
+    while 0 <= i <= ms-1:
+        u_old[i][0] = -u_old[i][1]
+        v_old[i][0] = v_WallAB
+        p_old[i][0] = p_old[i][1]
+        i += 1
+    #WallCD
+    i = 0
+    while 0 <= i <= ms-1:
+        u_old[i][n] = -u_old[i][n-1]
+        v_old[i][n-1] = v_WallCD
+        p_old[i][n] = p_old[i][n-1]
+        i += 1
+    #BoundaryBC
+    j = 0
+    while 0 <= j <= n-1:
+        u_old[ms-1][j] = u_old[ms-2][j]
+        v_old[ms][j] = v_old[ms-1][j]
+        p_old[ms][j] = p_old[ms-1][j]
+        j += 1
+boundary_condition()
 
 #初期におけるDIV
 while 1 <= i <= ms-1:
@@ -166,18 +168,27 @@ def graph():
     p_out = p_old.transpose()
     os.chdir(str(value[1]))
     #速度ベクトル作成
-    plt.quiver(u_out, v_out, angles='xy', scale_units='xy', scale=1)
+    plt.quiver(u_out, v_out, angles='xy', scale_units='xy')
     plt.xlim([-1.0*ms/10, 11.0*ms/10])
     plt.ylim([-1.0*n/10, 11.0*n/10])
+    plt.axis('equal')
+    plt.title('velocity_vector(t='+str(t)+')')
+    plt.xlabel('x')
+    plt.ylabel('y')
     plt.grid()
     plt.draw()
     plt.savefig("velocity(t=" + str(t) + ").jpg")
+    plt.close()
     #圧力分布作成
     plt.imshow(p_out)
     plt.colorbar()
+    plt.xlim([-1.0*ms/10, 11.0*ms/10])
+    plt.ylim([-1.0*n/10, 11.0*n/10])
+    plt.title('pressure_distribution(t='+str(t)+')')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.savefig("pressure(t=" + str(t) + ").jpg")
+    plt.close()
     os.chdir('../')
 graph()
 
@@ -243,35 +254,9 @@ while t <= T:
                 j += 1
             j = 1
             i += 1
-        #境界条件の設定
-        #BoundaryAD
-        j = 0
-        while 0 <= j <= n-1:
-            u_old[0][j] = u_old[1][j]
-            v_old[0][j] = v_old[1][j]
-            p_old[0][j] = p_old[1][j]
-            j += 1
-        #WallAB
-        i = 0
-        while 0 <= i <= ms-1:
-            u_old[i][0] = -u_old[i][1]
-            v_old[i][0] = v_WallAB
-            p_old[i][0] = p_old[i][1]
-            i += 1
-        #WallCD
-        i = 0
-        while 0 <= i <= ms-1:
-            u_old[i][n] = -u_old[i][n-1]
-            v_old[i][n-1] = v_WallCD
-            p_old[i][n] = p_old[i][n-1]
-            i += 1
-        #BoundaryBC
-        j = 0
-        while 0 <= j <= n-1:
-            u_old[ms-1][j] = u_old[ms-2][j]
-            v_old[ms][j] = v_old[ms-1][j]
-            p_old[ms][j] = p_old[ms-1][j]
-            j += 1
+
+        boundary_condition()
+
         #連続の式の収束条件
         i = 1
         j = 1
@@ -313,7 +298,7 @@ while t <= T:
         m += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルで出力
-    if t == deltaT or int(t/deltaT) % 100 == 0:
+    if t == deltaT or int(t/deltaT) % 20 == 0:
         csvout()
         graph()
 

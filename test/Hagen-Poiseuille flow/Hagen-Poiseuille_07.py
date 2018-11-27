@@ -175,18 +175,27 @@ def graph():
     p_out = p_old.transpose()
     os.chdir(str(value[1]))
     #速度ベクトル作成
-    plt.quiver(u_out, v_out, angles='xy', scale_units='xy', scale=1)
+    plt.quiver(u_out, v_out, angles='xy', scale_units='xy')
     plt.xlim([-1.0*ms/10, 11.0*ms/10])
     plt.ylim([-1.0*n/10, 11.0*n/10])
+    plt.axis('equal')
+    plt.title('velocity_vector(t='+str(t)+')')
+    plt.xlabel('x')
+    plt.ylabel('y')
     plt.grid()
     plt.draw()
     plt.savefig("velocity(t=" + str(t) + ").jpg")
+    plt.close()
     #圧力分布作成
     plt.imshow(p_out)
     plt.colorbar()
+    plt.xlim([-1.0*ms/10, 11.0*ms/10])
+    plt.ylim([-1.0*n/10, 11.0*n/10])
+    plt.title('pressure_distribution(t='+str(t)+')')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.savefig("pressure(t=" + str(t) + ").jpg")
+    plt.close()
     os.chdir('../')
 graph()
 
@@ -292,7 +301,7 @@ while t <= T:
         m += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルとグラフを出力
-    if t == deltaT or int(t/deltaT) % 100 == 0:
+    if t == deltaT or int(t/deltaT) % 20 == 0:
         csvout()
         graph()
 
