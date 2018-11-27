@@ -160,7 +160,6 @@ def csvout():
 csvout()
 
 #グラフを作成して保存する
-#グラフを作成して保存する
 def graph():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
