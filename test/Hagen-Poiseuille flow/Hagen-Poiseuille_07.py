@@ -185,6 +185,8 @@ def graph():
     plt.grid()
     plt.draw()
     plt.savefig("velocity(t=" + str(t) + ").jpg")
+    plt.cla()
+    plt.clf()
     plt.close()
     #圧力分布作成
     plt.imshow(p_out)
@@ -195,6 +197,8 @@ def graph():
     plt.xlabel('x')
     plt.ylabel('y')
     plt.savefig("pressure(t=" + str(t) + ").jpg")
+    plt.cla()
+    plt.clf()
     plt.close()
     os.chdir('../')
 graph()
