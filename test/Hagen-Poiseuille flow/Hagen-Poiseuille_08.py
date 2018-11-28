@@ -197,7 +197,7 @@ def graph():
     #速度ベクトル作成
     plt.pcolor(X_out, Y_out, velocity_out)
     plt.colorbar()
-    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy', scale=10)
+    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy', scale=0.00001)
     plt.axis('equal')
     plt.title('velocity_vector(t='+str(t)+')')
     plt.xlabel('x')
