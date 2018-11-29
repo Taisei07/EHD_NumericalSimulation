@@ -5,6 +5,7 @@ import math
 import matplotlib.pyplot as plt
 from numpy.random import *
 from matplotlib import animation
+import matplotlib.patches as patches
 import os
 import csv
 import sys
@@ -197,7 +198,7 @@ def graph():
     #速度ベクトル作成
     plt.pcolor(X_out, Y_out, velocity_out)
     plt.colorbar()
-    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy', scale=0.00001)
+    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
     plt.axis('equal')
     plt.title('velocity_vector(t='+str(t)+')')
     plt.xlabel('x')
@@ -206,12 +207,14 @@ def graph():
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
     plt.draw()
-    plt.savefig("velocity(t=" + str(t) + ").jpg")
+    ax = plt.axes()
+    r = patches.Rectangle(xy=(0, -0.001), width=0.0005, height=0.0005, fc='y')
+    ax.add_patch(r)
+    plt.savefig("velocity(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
     #圧力分布作成
-    #plt.imshow(p_out)
     plt.pcolor(X_out, Y_out, p_out)
     plt.colorbar()
     plt.axis('equal')
@@ -221,7 +224,7 @@ def graph():
     plt.xlim(-1.0*L/10, 11.0*L/10)
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
-    plt.savefig("pressure(t=" + str(t) + ").jpg")
+    plt.savefig("pressure(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
@@ -335,7 +338,7 @@ while t <= T:
         m += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルで出力
-    if t == deltaT or int(t/deltaT) % 20 == 0:
+    if t == deltaT or int(t/deltaT) % 100 == 0:
         csvout()
         graph()
 

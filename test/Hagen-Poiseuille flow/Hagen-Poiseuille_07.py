@@ -169,19 +169,44 @@ def csvout():
 csvout()
 
 #グラフを作成して保存する
+X = np.array([[0.0] * (n+1) for i in range(ms+1)])
+i = 0
+j = 0
+while 0 <= j <= n:
+    while 0 <= i <= ms:
+        X[i][j] = deltax * i
+        i += 1
+    i = 0
+    j += 1
+Y = np.array([[0.0] * (n+1) for i in range(ms+1)])
+i = 0
+j = 0
+while 0 <= j <= n:
+    while 0 <= i <= ms:
+        Y[i][j] = deltay * j
+        i += 1
+    i = 0
+    j += 1
+X_out = X.transpose()
+Y_out = Y.transpose()
 def graph():
+    #配列変換・設定
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
+    velocity_out = np.sqrt(u_out**2+v_out**2)
+    #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
-    plt.quiver(u_out, v_out, angles='xy', scale_units='xy')
-    plt.xlim([-1.0*ms/10, 11.0*ms/10])
-    plt.ylim([-1.0*n/10, 11.0*n/10])
+    plt.pcolor(X_out, Y_out, velocity_out)
+    plt.colorbar()
+    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy')
     plt.axis('equal')
     plt.title('velocity_vector(t='+str(t)+')')
     plt.xlabel('x')
     plt.ylabel('y')
+    plt.xlim(-1.0*L/10, 11.0*L/10)
+    plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
     plt.draw()
     plt.savefig("velocity(t=" + str(t) + ").jpg")
@@ -189,13 +214,16 @@ def graph():
     plt.clf()
     plt.close()
     #圧力分布作成
-    plt.imshow(p_out)
+    #plt.imshow(p_out)
+    plt.pcolor(X_out, Y_out, p_out)
     plt.colorbar()
-    plt.xlim([-1.0*ms/10, 11.0*ms/10])
-    plt.ylim([-1.0*n/10, 11.0*n/10])
+    plt.axis('equal')
     plt.title('pressure_distribution(t='+str(t)+')')
     plt.xlabel('x')
     plt.ylabel('y')
+    plt.xlim(-1.0*L/10, 11.0*L/10)
+    plt.ylim(-1.0*H/10, 11.0*H/10)
+    plt.grid()
     plt.savefig("pressure(t=" + str(t) + ").jpg")
     plt.cla()
     plt.clf()
@@ -242,6 +270,7 @@ while t <= T:
     Dmax = M + 1
     while Dmax > M :
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
+        print str(value[1])
         print "t = " + str(t)
         print "m = " + str(m)
         i = 1
