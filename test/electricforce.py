@@ -33,13 +33,14 @@ deltaT = 0.00001#input("deltaT(時間刻み)[s] = ")
 deltax = 0.00005#input("deltax(x方向要素間距離)[m] = ")
 deltay = 0.00005#input("deltay(y方向要素間距離)[m] = ")
 omega = 0.5#input("omega(緩和係数) = ")
-M = input("M(連続の式収束条件) = ")
-B_x = input("B_x(electrode上の点Bのx座標)[m] = ")
-C_x = input("C_x(electrode上の点Cのx座標)[m] = ")
-D_x = input("D_x(electrode上の点Dのx座標)[m] = ")
-E_x = input("E_x(electrode上の点Eのx座標)[m] = ")
-phi_electrodeBC = input("phi_electrodeBC(電極BCの電位)[V] = ")
-phi_electrodeDE = input("phi_electrodeDE(電極DEの電位)[V] = ")
+M1 = 0.000001#input("M1(連続の式収束条件) = ")
+M2 = 0.00000001#input("M2(電位phiの収束条件) = ")
+B_x = 0.0019#input("B_x(electrode上の点Bのx座標)[m] = ")
+C_x = 0.0029#input("C_x(electrode上の点Cのx座標)[m] = ")
+D_x = 0.0031#input("D_x(electrode上の点Dのx座標)[m] = ")
+E_x = 0.0041#input("E_x(electrode上の点Eのx座標)[m] = ")
+phi_electrodeBC = 100#input("phi_electrodeBC(電極BCの電位)[V] = ")
+phi_electrodeDE = 0#input("phi_electrodeDE(電極DEの電位)[V] = ")
 
 #物性値、定数の出力
 constant_list = [\
@@ -161,7 +162,8 @@ while 1 <= i <= ms-1:
 
 #初期値の計算
 t = 0
-m = 1
+m1 = 1
+m2 = 1
 
 def phi_calculation():
     i = 1
@@ -239,8 +241,8 @@ def graph():
     plt.colorbar()
     plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
     plt.axis('equal')
-    if m % 10000 == 0:
-        plt.title('velocity_vector(t='+str(t)+',m='+str(m)+')')
+    if m2 % 10000 == 0:
+        plt.title('velocity_vector(t='+str(t)+',m2='+str(m2)+')')
     else:
         plt.title('velocity_vector(t='+str(t)+')')
     plt.xlabel('x')
@@ -254,8 +256,8 @@ def graph():
     ax.add_patch(l)
     r = patches.Rectangle(xy=(D_x, 0), width=E_x-D_x, height=0.00005, fc='y')
     ax.add_patch(r)
-    if m % 10000 == 0:
-        plt.savefig("velocity(t=" + str(t) +",m="+str(m)+ ").png", dpi=600)
+    if m2 % 10000 == 0:
+        plt.savefig("velocity(t=" + str(t) +",m2="+str(m2)+ ").png", dpi=600)
     else:
         plt.savefig("velocity(t=" + str(t) + ").png", dpi=600)
     plt.cla()
@@ -265,8 +267,8 @@ def graph():
     plt.pcolor(X_out, Y_out, p_out)
     plt.colorbar()
     plt.axis('equal')
-    if m % 10000 == 0:
-        plt.title('pressure_distribution(t='+str(t)+',m='+str(m)+')')
+    if m2 % 10000 == 0:
+        plt.title('pressure_distribution(t='+str(t)+',m2='+str(m2)+')')
     else:
         plt.title('pressure_distribution(t='+str(t)+')')
     plt.xlabel('x')
@@ -279,8 +281,8 @@ def graph():
     ax.add_patch(l)
     r = patches.Rectangle(xy=(D_x, 0), width=E_x-D_x, height=0.00005, fc='y')
     ax.add_patch(r)
-    if m % 10000 == 0:
-        plt.savefig("pressure(t=" + str(t) +",m="+str(m)+ ").png", dpi=600)
+    if m2 % 10000 == 0:
+        plt.savefig("pressure(t=" + str(t) +",m2="+str(m2)+ ").png", dpi=600)
     else:
         plt.savefig("pressure(t=" + str(t) + ").png", dpi=600)
     plt.cla()
@@ -290,8 +292,8 @@ def graph():
     plt.pcolor(X_out, Y_out, q_out)
     plt.colorbar()
     plt.axis('equal')
-    if m % 10000 == 0:
-        plt.title('electricalcharge_distribution(t='+str(t)+',m='+str(m)+')')
+    if m2 % 10000 == 0:
+        plt.title('electricalcharge_distribution(t='+str(t)+',m2='+str(m2)+')')
     else:
         plt.title('electricalcharge_distribution(t='+str(t)+')')
     plt.xlabel('x')
@@ -304,8 +306,8 @@ def graph():
     ax.add_patch(l)
     r = patches.Rectangle(xy=(D_x, 0), width=E_x-D_x, height=0.00005, fc='y')
     ax.add_patch(r)
-    if m % 10000 == 0:
-        plt.savefig("electricalcharge(t=" + str(t) +",m="+str(m)+ ").png", dpi=600)
+    if m2 % 10000 == 0:
+        plt.savefig("electricalcharge(t=" + str(t) +",m2="+str(m2)+ ").png", dpi=600)
     else:
         plt.savefig("electricalcharge(t=" + str(t) + ").png", dpi=600)
     plt.cla()
@@ -318,17 +320,25 @@ print "Calculation starts"
 t = deltaT
 while t <= T:
     print "t =" + str(t)
-    #電荷保存則により電荷密度qを求める
-    i = 1
-    j = 1
-    while 1 <= i <= ms-1:
-        while 1 <= j <= n-1:
-            q[i][j] = q[i][j] - deltaT * (-K * (q[i][j]*((phi[i+1][j]-2*phi[i][j]+phi[i-1][j])/(deltax**2)+(phi[i][j+1]-2*phi[i][j]+phi[i][j-1])/(deltay**2))+(phi[i+1][j]+phi[i-1][j])/(2*deltax)*(q[i+1][j]-q[i-1][j])/(2*deltax)+(phi[i][j+1]+phi[i][j-1])/(2*deltay)*(q[i][j+1]-q[i][j-1])/(2*deltay))+q[i][j]*((u_old[i][j]-u_old[i-1][j])/deltax+(v_old[i][j]-v_old[i][j-1])/deltay)+(u_old[i][j]+u_old[i-1][j])/2*(q[i+1][j]-q[i-1][j])/(2*deltax)+(v_old[i][j]+v_old[i][j-1])/2*(q[i][j+1]-q[i][j-1])/(2*deltay)-Di*((q[i+1][j]-2*q[i][j]+q[i-1][j])/(deltax**2)+(q[i][j+1]-2*q[i][j]+q[i][j-1])/(deltay**2))-sigma*((phi[i+1][j]-2*phi[i][j]+phi[i-1][j])/(deltax**2)+(phi[i][j+1]-2*phi[i][j]+phi[i][j-1])/(deltay**2)))
-            j += 1
+    m1 = 1
+    Bmax = M2 + 1
+    while Bmax > M2:
+        #電荷保存則により電荷密度qを求める
+        i = 1
         j = 1
-        i += 1
-    #Gaussの法則
-    phi_calculation()
+        while 1 <= i <= ms-1:
+            while 1 <= j <= n-1:
+                q[i][j] = q[i][j] - deltaT * (-K * (q[i][j]*((phi[i+1][j]-2*phi[i][j]+phi[i-1][j])/(deltax**2)+(phi[i][j+1]-2*phi[i][j]+phi[i][j-1])/(deltay**2))+(phi[i+1][j]+phi[i-1][j])/(2*deltax)*(q[i+1][j]-q[i-1][j])/(2*deltax)+(phi[i][j+1]+phi[i][j-1])/(2*deltay)*(q[i][j+1]-q[i][j-1])/(2*deltay))+q[i][j]*((u_old[i][j]-u_old[i-1][j])/deltax+(v_old[i][j]-v_old[i][j-1])/deltay)+(u_old[i][j]+u_old[i-1][j])/2*(q[i+1][j]-q[i-1][j])/(2*deltax)+(v_old[i][j]+v_old[i][j-1])/2*(q[i][j+1]-q[i][j-1])/(2*deltay)-Di*((q[i+1][j]-2*q[i][j]+q[i-1][j])/(deltax**2)+(q[i][j+1]-2*q[i][j]+q[i][j-1])/(deltay**2))-sigma*((phi[i+1][j]-2*phi[i][j]+phi[i-1][j])/(deltax**2)+(phi[i][j+1]-2*phi[i][j]+phi[i][j-1])/(deltay**2)))
+                j += 1
+            j = 1
+            i += 1
+        boundary_condition()
+        phi_old = phi
+        #Gaussの法則
+        phi_calculation()
+        B = phi - phi_old
+        Bmax = np.max(B)
+        m1 += 1
     #電気的な力FX,Fyの配列設定
     i = 1
     j = 1
@@ -371,13 +381,13 @@ while t <= T:
 
 
     #圧力補正ループ
-    m = 1
-    Dmax = M + 1
-    while Dmax > M :
+    m2 = 1
+    Dmax = M1 + 1
+    while Dmax > M1 :
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
         print str(value[1])
         print "t = " + str(t)
-        print "m = " + str(m)
+        print "m2 = " + str(m2)
         i = 1
         j = 1
         while 1 <= i <= ms-1:
@@ -436,10 +446,10 @@ while t <= T:
         print "deltap = " + str(deltap)
         process_time = time.time() - start_time
         print "process_time = " + str(process_time)
-        if m % 10000 == 0:
+        if m2 % 10000 == 0:
             csvout()
             graph()
-        m += 1
+        m2 += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルで出力
     if t == deltaT or int(t/deltaT) % 20 == 0:
