@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 from numpy.random import *
+from matplotlib import animation
+import matplotlib.patches as patches
 import os
 import csv
 import sys
@@ -73,9 +76,6 @@ p_WallCD = 0.0#圧力[Pa]@wallCD
 u_old = np.array([[0.0] * (n+1) for i in range(ms+1)])#ms:x方向,n:y方向
 v_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 p_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
-u_new = np.array([[0.0] * (n+1) for i in range(ms+1)])
-v_new = np.array([[0.0] * (n+1) for i in range(ms+1)])
-p_new = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #対流項CNVと粘性項DIF配列設定
 CNVU = np.array([[0.0] * (n+1) for i in range(ms+1)])
@@ -146,7 +146,7 @@ while 1 <= i <= ms-1:
     i += 1
 
 t = 0
-
+m = 1
 #csvファイルで出力
 def csvout():
     u_out = u_old.transpose()
@@ -200,31 +200,45 @@ def graph():
     #速度ベクトル作成
     plt.pcolor(X_out, Y_out, velocity_out)
     plt.colorbar()
-    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy')
+    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
     plt.axis('equal')
-    plt.title('velocity_vector(t='+str(t)+')')
+    if m % 10000 == 0:
+        plt.title('velocity_vector(t='+str(t)+',m='+str(m)+')')
+    else:
+        plt.title('velocity_vector(t='+str(t)+')')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.xlim(-1.0*L/10, 11.0*L/10)
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
     plt.draw()
-    plt.savefig("velocity(t=" + str(t) + ").jpg")
+    ax = plt.axes()
+    r = patches.Rectangle(xy=(0, -0.001), width=0.0005, height=0.0005, fc='y')
+    ax.add_patch(r)
+    if m % 10000 == 0:
+        plt.savefig("velocity(t=" + str(t) +",m="+str(m)+ ").png", dpi=600)
+    else:
+        plt.savefig("velocity(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
     #圧力分布作成
-    #plt.imshow(p_out)
     plt.pcolor(X_out, Y_out, p_out)
     plt.colorbar()
     plt.axis('equal')
-    plt.title('pressure_distribution(t='+str(t)+')')
+    if m % 10000 == 0:
+        plt.title('pressure_distribution(t='+str(t)+',m='+str(m)+')')
+    else:
+        plt.title('pressure_distribution(t='+str(t)+')')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.xlim(-1.0*L/10, 11.0*L/10)
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
-    plt.savefig("pressure(t=" + str(t) + ").jpg")
+    if m % 10000 == 0:
+        plt.savefig("pressure(t=" + str(t) +",m="+str(m)+ ").png", dpi=600)
+    else:
+        plt.savefig("pressure(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
@@ -331,6 +345,9 @@ while t <= T:
         print "deltap = " + str(deltap)
         process_time = time.time() - start_time
         print "process_time = " + str(process_time)
+        if m % 10000 == 0:
+            csvout()
+            graph()
         m += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルとグラフを出力

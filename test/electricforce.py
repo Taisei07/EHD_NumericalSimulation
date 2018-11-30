@@ -17,25 +17,48 @@ start_time = time.time()
 
 #物性値
 print "物性値入力"
-rho = input("rho(流体密度)[kg/m^3] = ")
-nu = input("nu（動粘性係数）[m^2/s] = ")
+rho = 950#input("rho(流体密度)[kg/m^3] = ")
+nu = 0.000096#input("nu（動粘性係数）[m^2/s] = ")
+epsilon = 0.000000000099#input("epsilon(流体の誘電率)[F/m] = ")
+K = 0.000000001#input("K(イオン移動度)[m^2/Vs] = ")
+Di = 0#input("Di(イオン拡散係数) = ")
+sigma = 0.000000001#input("sigma(導電率)[A/Vm] = ")
 
 #定数
 print "定数入力"
-H = input("H(流れ場y方向長さ)[m] = ")
-L = input("L(流れ場x方向長さ)[m] = ")
-T = input("T(移流時間)[s] = ")
-deltaT = input("deltaT(時間刻み)[s] = ")
-deltax = input("deltax(x方向要素間距離)[m] = ")
-deltay = input("deltay(y方向要素間距離)[m] = ")
-omega = input("omega(緩和係数) = ")
+H = 0.002#input("H(流れ場y方向長さ)[m] = ")
+L = 0.006#input("L(流れ場x方向長さ)[m] = ")
+T = 0.5#input("T(移流時間)[s] = ")
+deltaT = 0.00001#input("deltaT(時間刻み)[s] = ")
+deltax = 0.00005#input("deltax(x方向要素間距離)[m] = ")
+deltay = 0.00005#input("deltay(y方向要素間距離)[m] = ")
+omega = 0.5#input("omega(緩和係数) = ")
 M = input("M(連続の式収束条件) = ")
-Fx_electrode = input("Fx_electrode(電極付近の電気的なx方向の力) = ")
+B_x = input("B_x(electrode上の点Bのx座標)[m] = ")
+C_x = input("C_x(electrode上の点Cのx座標)[m] = ")
+D_x = input("D_x(electrode上の点Dのx座標)[m] = ")
+E_x = input("E_x(electrode上の点Eのx座標)[m] = ")
+phi_electrodeBC = input("phi_electrodeBC(電極BCの電位)[V] = ")
+phi_electrodeDE = input("phi_electrodeDE(電極DEの電位)[V] = ")
 
 #物性値、定数の出力
-constant_list = [["rho",rho],["nu",nu],["H",H],["L",L],["T",T],["deltaT",deltaT],["deltax",deltax],["deltay",deltay],["omega",omega],["M",M]]
-if Fx_electrode != 0:
-    constant_list.append(["Fx_electrode",Fx_electrode])
+constant_list = [\
+["密度rho[kg/m^3]",rho],\
+["動粘性係数nu[m^2/s]",nu],\
+["流体の誘電率epsilon[F/m]",epsilon],\
+["イオン移動度K[m^2/Vs]",K],\
+["イオン拡散係数Di",Di],\
+["導電率sigma[A/Vm]",sigma],\
+["流れ場y方向長さH[m]",H],\
+["流れ場x方向長さL[m]",L],\
+["移流時間T[s]",T],\
+["時間刻みdeltaT[s]",deltaT],\
+["x方向要素間距離deltax[m]",deltax],\
+["y方向要素間距離deltay[m]",deltay],\
+["緩和係数omega",omega],\
+["連続の式収束条件M",M],\
+["電極BCの電位phi_electrodeBC[V]",phi_electrodeBC],\
+["電極DEの電位phi_electrodeDE[V]",phi_electrodeDE]]
 with open(os.path.join(str(value[1]),"constant.csv"), 'w') as file:
     writer = csv.writer(file, lineterminator = '\n')
     writer.writerows(constant_list)
@@ -46,27 +69,14 @@ n = int(H / deltay + 1)
 print "ms :" + str(ms)
 print "n :" + str(n)
 
-#初期条件
-u_BoundaryAD = 0.0#x方向速度[m/s]@inlet
-v_BoundaryAD = 0.0#y方向速度[m/s]@inlet
-p_BoundaryAD = 0.0#圧力[Pa]@inlet
-
-u_WallAB = 0.0#x方向速度[m/s]@wallAB
-v_WallAB = 0.0#x方向速度[m/s]@wallAB
-p_WallAB = 0.0#圧力[Pa]@wallAB
-
-u_BoundaryBC = 0.0#x方向速度[m/s]@outlet
-v_BoundaryBC = 0.0#y方向速度[m/s]@outlet
-p_BoundaryBC = 0.0#圧力[Pa]@outlet
-
-u_WallCD = 0.0#x方向速度[m/s]@wallCD
-v_WallCD = 0.0#y方向速度[m/s]@wallCD
-p_WallCD = 0.0#圧力[Pa]@wallCD
-
 #格子定義点(oldはtimestep=n, newはtimestep=n+1)　＊座標(ms,n)に1を足している
 u_old = np.array([[0.0] * (n+1) for i in range(ms+1)])#ms:x方向,n:y方向
 v_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 p_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
+phi = np.array([[0.0] * (n+1) for i in range(ms+1)])
+q = np.array([[0.0] * (n+1) for i in range(ms+1)])
+Fx = np.array([[0.0] * (n+1) for i in range(ms+1)])
+Fy = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #対流項CNVと粘性項DIF配列設定
 CNVU = np.array([[0.0] * (n+1) for i in range(ms+1)])
@@ -76,60 +86,72 @@ DIFV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 #連続の式DIV・圧力補正量deltapの配列設定
 DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
-#圧力から速度場を決定する場合
-if p_BoundaryAD != p_BoundaryBC:
-    #速度場設定
-    i = 0
-    j = 1
-    while 0 <= i <= ms-1:
-        while 1 <= j <= n-1:
-            u_old[i][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-            j += 1
-        j = 1
-        i += 1
-    #圧力場指定
-    i = 0
-    j = 0
-    while 0 <= i <= ms:
-        while 0 <= j <= n:
-            p_old[i][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))
-            j += 1
-        j = 0
-        i += 1
+#初期条件
+i = int(B_x / deltax)
+while int(B_x / deltax) <= i <= int(C_x / deltax):
+    phi[i][0] = phi_electrodeBC
+    i += 1
+i = int(D_x / deltax)
+while int(D_x / deltax) <= i <= int(E_x / deltax):
+    phi[i][0] = phi_electrodeDE
+    i += 1
 
 #境界条件の設定
 def boundary_condition():
-    #BoundaryAD
+    #BoundaryAH
     j = 0
     while 0 <= j <= n-1:
         u_old[0][j] = u_old[1][j]
         v_old[0][j] = v_old[1][j]
         p_old[0][j] = p_old[1][j]
+        phi[0][j] = phi[1][j]
+        q[0][j] = q[0][j]
         j += 1
-    #WallAB
+    #WallAF
     i = 0
     while 0 <= i <= ms-1:
         u_old[i][0] = -u_old[i][1]
-        v_old[i][0] = v_WallAB
+        v_old[i][0] = 0.0
         p_old[i][0] = p_old[i][1]
+        phi[i][0] = phi[i][1]
+        q[i][0] = q[i][1]
         i += 1
-    #WallCD
+    #WallGH
     i = 0
     while 0 <= i <= ms-1:
         u_old[i][n] = -u_old[i][n-1]
-        v_old[i][n-1] = v_WallCD
+        v_old[i][n-1] = 0.0
         p_old[i][n] = p_old[i][n-1]
+        phi[i][n] = phi[i][n-1]
+        q[i][n] = q[i][n-1]
         i += 1
-    #BoundaryBC
+    #BoundaryFG
     j = 0
     while 0 <= j <= n-1:
         u_old[ms-1][j] = u_old[ms-2][j]
         v_old[ms][j] = v_old[ms-1][j]
         p_old[ms][j] = p_old[ms-1][j]
+        phi[ms][j] = phi[ms-1][j]
+        q[ms][j] = q[ms-1][j]
         j += 1
+    #ElectrodeBC
+    i = int(B_x / deltax)
+    while int(B_x / deltax) <= i <= int(C_x / deltax):
+        phi[i][0] = phi_electrodeBC
+        q[i][0] = - epsilon * (phi[i][1]-phi[i][0]) / (deltay**2)
+        i += 1
+    #ElectrodeDE
+    i = int(D_x / deltax)
+    while int(D_x / deltax) <= i <= int(E_x / deltax):
+        phi[i][0] = phi_electrodeDE
+        q[i][0] = - epsilon * (phi[i][1]-phi[i][0]) / (deltay**2)
+        i += 1
+
 boundary_condition()
 
 #初期におけるDIV
+i = 1
+j = 1
 while 1 <= i <= ms-1:
     while 1 <= j <= n-1:
         DIV[i][j] = abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay)
@@ -137,15 +159,29 @@ while 1 <= i <= ms-1:
     j = 1
     i += 1
 
-#初期値を出力
+#初期値の計算
 t = 0
 m = 1
+
+def phi_calculation():
+    i = 1
+    j = 1
+    while 1 <= i <= ms-1:
+        while 1 <= j <= n-1:
+            phi[i][j] = 1.0 * (deltax * deltay)**2 / (2 * ((deltax**2)+(deltay**2))) * (q[i][j] / epsilon + (phi[i+1][j]+phi[i-1][j])/(deltax**2) + (phi[i][j+1]+phi[i][j-1])/(deltay**2))
+            j += 1
+        j = 1
+        i += 1
+phi_calculation()
+
 #csvファイルで出力
 def csvout():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
     DIV_out = DIV.transpose()
+    phi_out = phi.transpose()
+    q_out = q.transpose()
     import csv
     with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
@@ -159,6 +195,12 @@ def csvout():
     with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerows(DIV_out)
+    with open(os.path.join(str(value[1]),"phi_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(phi_out)
+    with open(os.path.join(str(value[1]),"q_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(q_out)
 csvout()
 
 #グラフを作成して保存する
@@ -188,6 +230,8 @@ def graph():
     v_out = v_old.transpose()
     p_out = p_old.transpose()
     velocity_out = np.sqrt(u_out**2+v_out**2)
+    phi_out = phi.transpose()
+    q_out = q.transpose()
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
@@ -206,7 +250,9 @@ def graph():
     plt.grid()
     plt.draw()
     ax = plt.axes()
-    r = patches.Rectangle(xy=(0, -0.001), width=0.0005, height=0.0005, fc='y')
+    l = patches.Rectangle(xy=(B_x, 0), width=C_x-B_x, height=0.00005, fc='y')
+    ax.add_patch(l)
+    r = patches.Rectangle(xy=(D_x, 0), width=E_x-D_x, height=0.00005, fc='y')
     ax.add_patch(r)
     if m % 10000 == 0:
         plt.savefig("velocity(t=" + str(t) +",m="+str(m)+ ").png", dpi=600)
@@ -228,10 +274,40 @@ def graph():
     plt.xlim(-1.0*L/10, 11.0*L/10)
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
+    ax = plt.axes()
+    l = patches.Rectangle(xy=(B_x, 0), width=C_x-B_x, height=0.00005, fc='y')
+    ax.add_patch(l)
+    r = patches.Rectangle(xy=(D_x, 0), width=E_x-D_x, height=0.00005, fc='y')
+    ax.add_patch(r)
     if m % 10000 == 0:
         plt.savefig("pressure(t=" + str(t) +",m="+str(m)+ ").png", dpi=600)
     else:
         plt.savefig("pressure(t=" + str(t) + ").png", dpi=600)
+    plt.cla()
+    plt.clf()
+    plt.close()
+    #電荷密度分布作成
+    plt.pcolor(X_out, Y_out, q_out)
+    plt.colorbar()
+    plt.axis('equal')
+    if m % 10000 == 0:
+        plt.title('electricalcharge_distribution(t='+str(t)+',m='+str(m)+')')
+    else:
+        plt.title('electricalcharge_distribution(t='+str(t)+')')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.xlim(-1.0*L/10, 11.0*L/10)
+    plt.ylim(-1.0*H/10, 11.0*H/10)
+    plt.grid()
+    ax = plt.axes()
+    l = patches.Rectangle(xy=(B_x, 0), width=C_x-B_x, height=0.00005, fc='y')
+    ax.add_patch(l)
+    r = patches.Rectangle(xy=(D_x, 0), width=E_x-D_x, height=0.00005, fc='y')
+    ax.add_patch(r)
+    if m % 10000 == 0:
+        plt.savefig("electricalcharge(t=" + str(t) +",m="+str(m)+ ").png", dpi=600)
+    else:
+        plt.savefig("electricalcharge(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
@@ -242,6 +318,27 @@ print "Calculation starts"
 t = deltaT
 while t <= T:
     print "t =" + str(t)
+    #電荷保存則により電荷密度qを求める
+    i = 1
+    j = 1
+    while 1 <= i <= ms-1:
+        while 1 <= j <= n-1:
+            q[i][j] = q[i][j] - deltaT * (-K * (q[i][j]*((phi[i+1][j]-2*phi[i][j]+phi[i-1][j])/(deltax**2)+(phi[i][j+1]-2*phi[i][j]+phi[i][j-1])/(deltay**2))+(phi[i+1][j]+phi[i-1][j])/(2*deltax)*(q[i+1][j]-q[i-1][j])/(2*deltax)+(phi[i][j+1]+phi[i][j-1])/(2*deltay)*(q[i][j+1]-q[i][j-1])/(2*deltay))+q[i][j]*((u_old[i][j]-u_old[i-1][j])/deltax+(v_old[i][j]-v_old[i][j-1])/deltay)+(u_old[i][j]+u_old[i-1][j])/2*(q[i+1][j]-q[i-1][j])/(2*deltax)+(v_old[i][j]+v_old[i][j-1])/2*(q[i][j+1]-q[i][j-1])/(2*deltay)-Di*((q[i+1][j]-2*q[i][j]+q[i-1][j])/(deltax**2)+(q[i][j+1]-2*q[i][j]+q[i][j-1])/(deltay**2))-sigma*((phi[i+1][j]-2*phi[i][j]+phi[i-1][j])/(deltax**2)+(phi[i][j+1]-2*phi[i][j]+phi[i][j-1])/(deltay**2)))
+            j += 1
+        j = 1
+        i += 1
+    #Gaussの法則
+    phi_calculation()
+    #電気的な力FX,Fyの配列設定
+    i = 1
+    j = 1
+    while 1 <= i <= ms-1:
+        while 1 <= j <= n-1:
+            Fx[i][j] = - (q[i+1][j]+q[i][j])/2 * (phi[i+1][j]-phi[i][j])/deltax
+            Fy[i][j] = - (q[i][j+1]+q[i][j])/2 * (phi[i][j+1]-phi[i][j])/deltay
+            j += 1
+        j = 1
+        i += 1
     #u_old,v_old仮値設定①粘性項・対流項配列の設定
     i = 1
     j = 1
@@ -259,10 +356,7 @@ while t <= T:
     j = 1
     while 1 <= i <= ms-2:
         while 1 <= j <= n-1:
-            if Fx_electrode != 0 and ms*45.0/100 <= i <= ms*55.0/100 and 1 <= j <= 3:
-                u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j]+ 1.0 / rho * Fx_electrode)
-            else:
-                u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j])
+            u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j] + Fx[i][j])
             j += 1
         j = 1
         i += 1
@@ -270,7 +364,7 @@ while t <= T:
     j = 1
     while 1 <= i <= ms-1 :
         while 1 <= j <= n-2:
-            v_old[i][j] = v_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i][j+1]-p_old[i][j])/deltay - CNVV[i][j] + DIFV[i][j])
+            v_old[i][j] = v_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i][j+1]-p_old[i][j])/deltay - CNVV[i][j] + DIFV[i][j] + Fy[i][j])
             j += 1
         j = 1
         i += 1
