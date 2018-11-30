@@ -364,6 +364,7 @@ while t <= T:
                 j += 1
             j = 1
             i += 1
+        print "a"
         boundary_condition()
         phi_old = phi
         #Gaussの法則
