@@ -367,13 +367,13 @@ while t <= T:
                 i += 1
             i = 1
             j += 1
-        boundary_condition()
+        #boundary_condition()
         phi_old = phi
         #Gaussの法則
         phi_calculation()
         B = phi - phi_old
         Bmax = np.max(B)
-        print "Bmax =" + str(Bmax)
+        print "Bmax = " + str(Bmax)
         m1 += 1
     csvout01()
     graph01()
