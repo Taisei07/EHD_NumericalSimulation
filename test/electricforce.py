@@ -85,8 +85,9 @@ CNVU = np.array([[0.0] * (n+1) for i in range(ms+1)])
 CNVV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 DIFU = np.array([[0.0] * (n+1) for i in range(ms+1)])
 DIFV = np.array([[0.0] * (n+1) for i in range(ms+1)])
-#連続の式DIV・圧力補正量deltapの配列設定
+#連続の式DIV・電位DPHの配列設定
 DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
+DPH = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #初期条件
 i = int(B_x / deltax)
@@ -348,8 +349,8 @@ t = deltaT
 while t <= T:
     print "t =" + str(t)
     m1 = 1
-    Bmax = M2 + 1
-    while Bmax > M2:
+    DPmax = M2 + 1
+    while DPmax > M2:
         #電荷保存則とgaussの法則ループでphi・qを求める
         print str(value[1])
         print "t = " + str(t)
@@ -371,12 +372,19 @@ while t <= T:
         phi_old = phi
         #Gaussの法則
         phi_calculation()
-        B = phi - phi_old
-        Bmax = np.max(B)
-        with open(os.path.join(str(value[1]),"B.csv"), 'w') as file:
+        i = 0
+        j = 0
+        while 0 <= j <= n:
+            while 0 <= i <= ms:
+                DPH[i][j] = phi[i][j] - phi_old[i][j]
+                i += 1
+            i = 1
+            j += 1
+        DPmax = np.max(DPH)
+        with open(os.path.join(str(value[1]),"DPH.csv"), 'w') as file:
             writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(B)
-        print "Bmax = " + str(Bmax)
+            writer.writerows(DPH)
+        print "DPmax = " + str(DPmax)
         m1 += 1
     csvout01()
     graph01()
