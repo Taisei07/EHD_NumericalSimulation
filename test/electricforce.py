@@ -57,7 +57,8 @@ constant_list = [\
 ["x方向要素間距離deltax[m]",deltax],\
 ["y方向要素間距離deltay[m]",deltay],\
 ["緩和係数omega",omega],\
-["連続の式収束条件M",M],\
+["連続の式収束条件M1",M1],\
+["電位phiの収束条件M2",M2],\
 ["電極BCの電位phi_electrodeBC[V]",phi_electrodeBC],\
 ["電極DEの電位phi_electrodeDE[V]",phi_electrodeDE]]
 with open(os.path.join(str(value[1]),"constant.csv"), 'w') as file:
