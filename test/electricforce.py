@@ -169,12 +169,12 @@ m2 = 1
 def phi_calculation():
     i = 1
     j = 1
-    while 1 <= i <= ms-1:
-        while 1 <= j <= n-1:
+    while 1 <= j <= n-1:
+        while 1 <= i <= ms-1:
             phi[i][j] = 1.0 * (deltax * deltay)**2 / (2 * ((deltax**2)+(deltay**2))) * (1.0 * q[i][j] / epsilon + (phi[i+1][j]+phi[i-1][j])/(deltax**2) + (phi[i][j+1]+phi[i][j-1])/(deltay**2))
-            j += 1
-        j = 1
-        i += 1
+            i += 1
+        i = 1
+        j += 1
 phi_calculation()
 
 #csvファイルで出力
@@ -356,15 +356,17 @@ while t <= T:
         print "m1 = " + str(m1)
         i = 1
         j = 1
-        while 1 <= i <= ms-1:
-            while 1 <= j <= n-1:
+        while 1 <= j <= n-1:
+            while 1 <= i <= ms-1:
                 q[i][j] \
                 = q[i][j] - \
-                deltaT * (-K * (q[i][j] * ((phi[i+1][j] - 2*phi[i][j] + phi[i-1][j]) / (deltax**2) + (phi[i][j+1] - 2*phi[i][j] + phi[i][j-1]) / (deltay**2)) + (phi[i+1][j] + phi[i-1][j]) / (2*deltax) * (q[i+1][j] - q[i-1][j]) / (2*deltax) + (phi[i][j+1] + phi[i][j-1]) / (2*deltay) * (q[i][j+1] - q[i][j-1]) / (2*deltay)) + q[i][j] * ((u_old[i][j] - u_old[i-1][j]) / deltax + (v_old[i][j] - v_old[i][j-1]) / deltay) + (u_old[i][j] + u_old[i-1][j]) / 2 * (q[i+1][j] - q[i-1][j]) / (2*deltax) + (v_old[i][j] + v_old[i][j-1]) / 2*(q[i][j+1]-q[i][j-1]) / (2*deltay) - Di * ((q[i+1][j] - 2 * q[i][j] + q[i-1][j]) / (deltax**2) + (q[i][j+1] - 2 * q[i][j] + q[i][j-1]) / (deltay**2)) - sigma * ((phi[i+1][j] - 2 * phi[i][j] + phi[i-1][j]) / (deltax**2) + (phi[i][j+1] - 2 * phi[i][j] + phi[i][j-1]) / (deltay**2)))
-                j += 1
-            j = 1
-            i += 1
-        print "a"
+                deltaT * (-K * (q[i][j] * ((phi[i+1][j] - 2*phi[i][j] + phi[i-1][j]) / (deltax**2) + (phi[i][j+1] - 2*phi[i][j] + phi[i][j-1]) / (deltay**2)) + (phi[i+1][j] + phi[i-1][j]) / (2*deltax) * (q[i+1][j] - q[i-1][j]) / (2*deltax) + (phi[i][j+1] + phi[i][j-1]) / (2*deltay) * (q[i][j+1] - q[i][j-1]) / (2*deltay)) \
+                + q[i][j] * ((u_old[i][j] - u_old[i-1][j]) / deltax + (v_old[i][j] - v_old[i][j-1]) / deltay) \
+                + (u_old[i][j] + u_old[i-1][j]) / 2 * (q[i+1][j] - q[i-1][j]) / (2*deltax) + (v_old[i][j] + v_old[i][j-1]) / 2 * (q[i][j+1]-q[i][j-1]) / (2*deltay) \
+                - Di * ((q[i+1][j] - 2 * q[i][j] + q[i-1][j]) / (deltax**2) + (q[i][j+1] - 2 * q[i][j] + q[i][j-1]) / (deltay**2)) - sigma * ((phi[i+1][j] - 2 * phi[i][j] + phi[i-1][j]) / (deltax**2) + (phi[i][j+1] - 2 * phi[i][j] + phi[i][j-1]) / (deltay**2)))
+                i += 1
+            i = 1
+            j += 1
         boundary_condition()
         phi_old = phi
         #Gaussの法則
