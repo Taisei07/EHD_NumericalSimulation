@@ -171,20 +171,30 @@ def phi_calculation():
     j = 1
     while 1 <= i <= ms-1:
         while 1 <= j <= n-1:
-            phi[i][j] = 1.0 * (deltax * deltay)**2 / (2 * ((deltax**2)+(deltay**2))) * (q[i][j] / epsilon + (phi[i+1][j]+phi[i-1][j])/(deltax**2) + (phi[i][j+1]+phi[i][j-1])/(deltay**2))
+            phi[i][j] = 1.0 * (deltax * deltay)**2 / (2 * ((deltax**2)+(deltay**2))) * (1.0 * q[i][j] / epsilon + (phi[i+1][j]+phi[i-1][j])/(deltax**2) + (phi[i][j+1]+phi[i][j-1])/(deltay**2))
             j += 1
         j = 1
         i += 1
 phi_calculation()
 
 #csvファイルで出力
-def csvout():
+def csvout01():
+    phi_out = phi.transpose()
+    q_out = q.transpose()
+    import csv
+    with open(os.path.join(str(value[1]),"phi_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(phi_out)
+    with open(os.path.join(str(value[1]),"q_(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(q_out)
+csvout01()
+
+def csvout02():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
     DIV_out = DIV.transpose()
-    phi_out = phi.transpose()
-    q_out = q.transpose()
     import csv
     with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
@@ -198,13 +208,8 @@ def csvout():
     with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerows(DIV_out)
-    with open(os.path.join(str(value[1]),"phi_(t="+str(t)+")"+".csv"), 'w') as file:
-        writer = csv.writer(file, lineterminator = '\n')
-        writer.writerows(phi_out)
-    with open(os.path.join(str(value[1]),"q_(t="+str(t)+")"+".csv"), 'w') as file:
-        writer = csv.writer(file, lineterminator = '\n')
-        writer.writerows(q_out)
-csvout()
+csvout02()
+
 
 #グラフを作成して保存する
 X = np.array([[0.0] * (n+1) for i in range(ms+1)])
@@ -227,14 +232,59 @@ while 0 <= j <= n:
     j += 1
 X_out = X.transpose()
 Y_out = Y.transpose()
-def graph():
+def graph01():
+    #配列変換・設定
+    phi_out = phi.transpose()
+    q_out = q.transpose()
+    #ディレクトリ移動
+    os.chdir(str(value[1]))
+    #電荷密度分布作成
+    plt.pcolor(X_out, Y_out, q_out)
+    plt.colorbar()
+    plt.axis('equal')
+    plt.title('electricalcharge_distribution(t='+str(t)+')')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.xlim(-1.0*L/10, 11.0*L/10)
+    plt.ylim(-1.0*H/10, 11.0*H/10)
+    plt.grid()
+    ax = plt.axes()
+    l = patches.Rectangle(xy=(B_x, -0.00005), width=C_x-B_x, height=0.00005, fc='y')
+    ax.add_patch(l)
+    r = patches.Rectangle(xy=(D_x, -0.00005), width=E_x-D_x, height=0.00005, fc='y')
+    ax.add_patch(r)
+    plt.savefig("electricalcharge(t=" + str(t) + ").png", dpi=600)
+    plt.cla()
+    plt.clf()
+    plt.close()
+    #電位分布作成
+    plt.pcolor(X_out, Y_out, phi_out)
+    plt.colorbar()
+    plt.axis('equal')
+    plt.title('electricalpotential_distribution(t='+str(t)+')')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.xlim(-1.0*L/10, 11.0*L/10)
+    plt.ylim(-1.0*H/10, 11.0*H/10)
+    plt.grid()
+    ax = plt.axes()
+    l = patches.Rectangle(xy=(B_x, -0.00005), width=C_x-B_x, height=0.00005, fc='y')
+    ax.add_patch(l)
+    r = patches.Rectangle(xy=(D_x, -0.00005), width=E_x-D_x, height=0.00005, fc='y')
+    ax.add_patch(r)
+    plt.savefig("electricalpotential(t=" + str(t) + ").png", dpi=600)
+    plt.cla()
+    plt.clf()
+    plt.close()
+    os.chdir('../')
+graph01()
+
+def graph02():
     #配列変換・設定
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
     velocity_out = np.sqrt(u_out**2+v_out**2)
-    phi_out = phi.transpose()
-    q_out = q.transpose()
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
@@ -253,9 +303,9 @@ def graph():
     plt.grid()
     plt.draw()
     ax = plt.axes()
-    l = patches.Rectangle(xy=(B_x, 0), width=C_x-B_x, height=0.00005, fc='y')
+    l = patches.Rectangle(xy=(B_x, -0.00005), width=C_x-B_x, height=0.00005, fc='y')
     ax.add_patch(l)
-    r = patches.Rectangle(xy=(D_x, 0), width=E_x-D_x, height=0.00005, fc='y')
+    r = patches.Rectangle(xy=(D_x, -0.00005), width=E_x-D_x, height=0.00005, fc='y')
     ax.add_patch(r)
     if m2 % 10000 == 0:
         plt.savefig("velocity(t=" + str(t) +",m2="+str(m2)+ ").png", dpi=600)
@@ -278,9 +328,9 @@ def graph():
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
     ax = plt.axes()
-    l = patches.Rectangle(xy=(B_x, 0), width=C_x-B_x, height=0.00005, fc='y')
+    l = patches.Rectangle(xy=(B_x, -0.00005), width=C_x-B_x, height=0.00005, fc='y')
     ax.add_patch(l)
-    r = patches.Rectangle(xy=(D_x, 0), width=E_x-D_x, height=0.00005, fc='y')
+    r = patches.Rectangle(xy=(D_x, -0.00005), width=E_x-D_x, height=0.00005, fc='y')
     ax.add_patch(r)
     if m2 % 10000 == 0:
         plt.savefig("pressure(t=" + str(t) +",m2="+str(m2)+ ").png", dpi=600)
@@ -289,33 +339,9 @@ def graph():
     plt.cla()
     plt.clf()
     plt.close()
-    #電荷密度分布作成
-    plt.pcolor(X_out, Y_out, q_out)
-    plt.colorbar()
-    plt.axis('equal')
-    if m2 % 10000 == 0:
-        plt.title('electricalcharge_distribution(t='+str(t)+',m2='+str(m2)+')')
-    else:
-        plt.title('electricalcharge_distribution(t='+str(t)+')')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.xlim(-1.0*L/10, 11.0*L/10)
-    plt.ylim(-1.0*H/10, 11.0*H/10)
-    plt.grid()
-    ax = plt.axes()
-    l = patches.Rectangle(xy=(B_x, 0), width=C_x-B_x, height=0.00005, fc='y')
-    ax.add_patch(l)
-    r = patches.Rectangle(xy=(D_x, 0), width=E_x-D_x, height=0.00005, fc='y')
-    ax.add_patch(r)
-    if m2 % 10000 == 0:
-        plt.savefig("electricalcharge(t=" + str(t) +",m2="+str(m2)+ ").png", dpi=600)
-    else:
-        plt.savefig("electricalcharge(t=" + str(t) + ").png", dpi=600)
-    plt.cla()
-    plt.clf()
-    plt.close()
     os.chdir('../')
-graph()
+graph02()
+
 
 print "Calculation starts"
 t = deltaT
@@ -324,7 +350,10 @@ while t <= T:
     m1 = 1
     Bmax = M2 + 1
     while Bmax > M2:
-        #電荷保存則により電荷密度qを求める
+        #電荷保存則とgaussの法則ループでphi・qを求める
+        print str(value[1])
+        print "t = " + str(t)
+        print "m1 = " + str(m1)
         i = 1
         j = 1
         while 1 <= i <= ms-1:
@@ -340,6 +369,8 @@ while t <= T:
         B = phi - phi_old
         Bmax = np.max(B)
         m1 += 1
+    csvout01()
+    graph01()
     #電気的な力FX,Fyの配列設定
     i = 1
     j = 1
@@ -448,14 +479,14 @@ while t <= T:
         process_time = time.time() - start_time
         print "process_time = " + str(process_time)
         if m2 % 10000 == 0:
-            csvout()
-            graph()
+            csvout02()
+            graph02()
         m2 += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルで出力
     if t == deltaT or int(t/deltaT) % 20 == 0:
-        csvout()
-        graph()
+        csvout02()
+        graph02()
 
     #時間を進める
     t = t + deltaT
