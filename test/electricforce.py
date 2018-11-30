@@ -384,6 +384,12 @@ while t <= T:
         with open(os.path.join(str(value[1]),"DPH.csv"), 'w') as file:
             writer = csv.writer(file, lineterminator = '\n')
             writer.writerows(DPH)
+        with open(os.path.join(str(value[1]),"phi_new.csv"), 'w') as file:
+            writer = csv.writer(file, lineterminator = '\n')
+            writer.writerows(phi)
+        with open(os.path.join(str(value[1]),"phi_old.csv"), 'w') as file:
+            writer = csv.writer(file, lineterminator = '\n')
+            writer.writerows(phi_old)
         print "DPmax = " + str(DPmax)
         m1 += 1
     csvout01()
