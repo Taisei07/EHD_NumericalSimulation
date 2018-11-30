@@ -355,6 +355,7 @@ while t <= T:
         print str(value[1])
         print "t = " + str(t)
         print "m1 = " + str(m1)
+        phi_old = phi
         i = 1
         j = 1
         while 1 <= j <= n-1:
@@ -369,27 +370,10 @@ while t <= T:
             i = 1
             j += 1
         boundary_condition()
-        phi_old = phi
         #Gaussの法則
         phi_calculation()
-        i = 0
-        j = 0
-        while 0 <= j <= n:
-            while 0 <= i <= ms:
-                DPH[i][j] = phi[i][j] - phi_old[i][j]
-                i += 1
-            i = 1
-            j += 1
+        DPH = phi - phi_old
         DPmax = np.max(DPH)
-        with open(os.path.join(str(value[1]),"DPH.csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(DPH)
-        with open(os.path.join(str(value[1]),"phi_new.csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(phi)
-        with open(os.path.join(str(value[1]),"phi_old.csv"), 'w') as file:
-            writer = csv.writer(file, lineterminator = '\n')
-            writer.writerows(phi_old)
         print "DPmax = " + str(DPmax)
         m1 += 1
     csvout01()
