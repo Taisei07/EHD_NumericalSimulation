@@ -177,15 +177,38 @@ t = 0
 m1 = 1
 m2 = 1
 
+#過去の電位phiを更新する
+def phi_old_def():
+    i = 0
+    j = 0
+    while 0 <= i <= ms:
+        while 0 <= j <= n:
+            phi_old[i][j] = phi[i][j]
+            j += 1
+        j = 0
+        i += 1
+
+#電位phiの計算
 def phi_calculation():
-    i = 1
-    j = 1
-    while 1 <= j <= n-1:
-        while 1 <= i <= ms-1:
-            phi[i][j] = 1.0 * (deltax * deltay)**2 / (2 * ((deltax**2)+(deltay**2))) * (1.0 * q[i][j] / epsilon + (phi[i+1][j]+phi[i-1][j])/(deltax**2) + (phi[i][j+1]+phi[i][j-1])/(deltay**2))
-            i += 1
+    DPmax = M2 + 1
+    m1 = 1
+    while DPmax > M2:
+        print str(value[1])
+        print "t = " + str(t)
+        print "m1 = " + str(m1)
         i = 1
-        j += 1
+        j = 1
+        while 1 <= j <= n-1:
+            while 1 <= i <= ms-1:
+                phi[i][j] = 1.0 * (deltax * deltay)**2 / (2 * ((deltax**2)+(deltay**2))) * (1.0 * q[i][j] / epsilon + (phi[i+1][j]+phi[i-1][j])/(deltax**2) + (phi[i][j+1]+phi[i][j-1])/(deltay**2))
+                i += 1
+            i = 1
+            j += 1
+        boundary_condition()
+        DPmax = np.max(phi-phi_old)
+        phi_old_def()
+        print "DPmax = " + str(DPmax)
+        m1 += 1
 phi_calculation()
 
 #csvファイルで出力
@@ -372,18 +395,8 @@ while t <= T:
             i += 1
         i = 1
         j += 1
-    i = 0
-    j = 0
-    while 0 <= j <= n:
-        while 0 <= i <= ms:
-            phi_old[i][j] = phi[i][j]
-            i += 1
-        i = 1
-        j += 1
+    phi_old_def()
     phi_calculation()
-    boundary_condition()
-    DPmax = np.max(phi-phi_old)
-    print "DPmax = " + str(DPmax)
     csvout01()
     graph01()
     #電気的な力FX,Fyの配列設定
