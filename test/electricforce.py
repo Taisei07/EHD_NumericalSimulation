@@ -349,6 +349,8 @@ t = deltaT
 while t <= T:
     print "t =" + str(t)
     #電化保存則
+    i = 1
+    j = 1
     while 1 <= j <= n-1:
         while 1 <= i <= ms-1:
             q[i][j] \
@@ -375,8 +377,6 @@ while t <= T:
                 i += 1
             i = 1
             j += 1
-        i = 1
-        j = 1
         boundary_condition()
         #Gaussの法則
         phi_calculation()
