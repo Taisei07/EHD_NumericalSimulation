@@ -196,6 +196,7 @@ def phi_calculation():
         print str(value[1])
         print "t = " + str(t)
         print "m1 = " + str(m1)
+        phi_old_def()
         i = 1
         j = 1
         while 1 <= j <= n-1:
@@ -206,7 +207,6 @@ def phi_calculation():
             j += 1
         boundary_condition()
         DPmax = np.max(phi-phi_old)
-        phi_old_def()
         print "DPmax = " + str(DPmax)
         m1 += 1
 phi_calculation()
@@ -395,7 +395,6 @@ while t <= T:
             i += 1
         i = 1
         j += 1
-    phi_old_def()
     phi_calculation()
     csvout01()
     graph01()
