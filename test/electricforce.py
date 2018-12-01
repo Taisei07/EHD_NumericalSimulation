@@ -78,6 +78,7 @@ p_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 phi = np.array([[0.0] * (n+1) for i in range(ms+1)])
 phi_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 q = np.array([[0.0] * (n+1) for i in range(ms+1)])
+q_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 Fx = np.array([[0.0] * (n+1) for i in range(ms+1)])
 Fy = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
@@ -361,11 +362,11 @@ while t <= T:
         while 1 <= j <= n-1:
             while 1 <= i <= ms-1:
                 q[i][j] \
-                = q[i][j] - \
-                deltaT * (-K * (q[i][j] * ((phi[i+1][j] - 2*phi[i][j] + phi[i-1][j]) / (deltax**2) + (phi[i][j+1] - 2*phi[i][j] + phi[i][j-1]) / (deltay**2)) + (phi[i+1][j] + phi[i-1][j]) / (2*deltax) * (q[i+1][j] - q[i-1][j]) / (2*deltax) + (phi[i][j+1] + phi[i][j-1]) / (2*deltay) * (q[i][j+1] - q[i][j-1]) / (2*deltay)) \
-                + q[i][j] * ((u_old[i][j] - u_old[i-1][j]) / deltax + (v_old[i][j] - v_old[i][j-1]) / deltay) \
-                + (u_old[i][j] + u_old[i-1][j]) / 2 * (q[i+1][j] - q[i-1][j]) / (2*deltax) + (v_old[i][j] + v_old[i][j-1]) / 2 * (q[i][j+1]-q[i][j-1]) / (2*deltay) \
-                - Di * ((q[i+1][j] - 2 * q[i][j] + q[i-1][j]) / (deltax**2) + (q[i][j+1] - 2 * q[i][j] + q[i][j-1]) / (deltay**2)) - sigma * ((phi[i+1][j] - 2 * phi[i][j] + phi[i-1][j]) / (deltax**2) + (phi[i][j+1] - 2 * phi[i][j] + phi[i][j-1]) / (deltay**2)))
+                = q_old[i][j] - \
+                deltaT * (-K * (q_old[i][j] * ((phi[i+1][j] - 2*phi[i][j] + phi[i-1][j]) / (deltax**2) + (phi[i][j+1] - 2*phi[i][j] + phi[i][j-1]) / (deltay**2)) + (phi[i+1][j] + phi[i-1][j]) / (2*deltax) * (q_old[i+1][j] - q_old[i-1][j]) / (2*deltax) + (phi[i][j+1] + phi[i][j-1]) / (2*deltay) * (q_old[i][j+1] - q_old[i][j-1]) / (2*deltay)) \
+                + q_old[i][j] * ((u_old[i][j] - u_old[i-1][j]) / deltax + (v_old[i][j] - v_old[i][j-1]) / deltay) \
+                + (u_old[i][j] + u_old[i-1][j]) / 2 * (q_old[i+1][j] - q_old[i-1][j]) / (2*deltax) + (v_old[i][j] + v_old[i][j-1]) / 2 * (q_old[i][j+1]-q_old[i][j-1]) / (2*deltay) \
+                - Di * ((q_old[i+1][j] - 2 * q_old[i][j] + q_old[i-1][j]) / (deltax**2) + (q_old[i][j+1] - 2 * q_old[i][j] + q_old[i][j-1]) / (deltay**2)) - sigma * ((phi[i+1][j] - 2 * phi[i][j] + phi[i-1][j]) / (deltax**2) + (phi[i][j+1] - 2 * phi[i][j] + phi[i][j-1]) / (deltay**2)))
                 i += 1
             i = 1
             j += 1
@@ -391,6 +392,7 @@ while t <= T:
         #with open(os.path.join(str(value[1]),"DPH.csv"), 'w') as file:
         #    writer = csv.writer(file, lineterminator = '\n')
         #    writer.writerows(DPH)
+        q_old = q
         m1 += 1
     csvout01()
     graph01()
