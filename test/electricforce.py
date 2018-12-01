@@ -89,7 +89,7 @@ DIFV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 #連続の式DIV・電位DPHの配列設定
 DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
-#初期条件
+#初期条件①電極周りの電位phi
 i = int(B_x / deltax)
 while int(B_x / deltax) <= i <= int(C_x / deltax):
     phi[i][0] = phi_electrodeBC
@@ -151,6 +151,16 @@ def boundary_condition():
         i += 1
 
 boundary_condition()
+
+#初期条件②電荷密度qを0に
+i = 0
+j = 0
+while 0 <= i <= ms:
+    while 0 <= j <= n:
+        q[i][j] = 0
+        j += 1
+    j = 0
+    i += 1 
 
 #初期におけるDIV
 i = 1
@@ -362,8 +372,6 @@ while t <= T:
             i += 1
         i = 1
         j += 1
-    m1 = 1
-    DPmax = M2 + 1
     i = 0
     j = 0
     while 0 <= j <= n:
@@ -372,6 +380,8 @@ while t <= T:
             i += 1
         i = 1
         j += 1
+    m1 = 1
+    DPmax = M2 + 1
     while DPmax > M2:
         #gaussの法則ループ
         print str(value[1])
