@@ -363,7 +363,7 @@ while t <= T:
     m1 = 1
     DPmax = M2 + 1
     while DPmax > M2:
-        #gaussの法則ループで
+        #gaussの法則ループ
         print str(value[1])
         print "t = " + str(t)
         print "m1 = " + str(m1)
