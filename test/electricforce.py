@@ -39,7 +39,7 @@ B_x = 0.0019#input("B_x(electrode上の点Bのx座標)[m] = ")
 C_x = 0.0029#input("C_x(electrode上の点Cのx座標)[m] = ")
 D_x = 0.0031#input("D_x(electrode上の点Dのx座標)[m] = ")
 E_x = 0.0041#input("E_x(electrode上の点Eのx座標)[m] = ")
-phi_electrodeBC = 100#input("phi_electrodeBC(電極BCの電位)[V] = ")
+phi_electrodeBC = 10#input("phi_electrodeBC(電極BCの電位)[V] = ")
 phi_electrodeDE = 0#input("phi_electrodeDE(電極DEの電位)[V] = ")
 
 #物性値、定数の出力
