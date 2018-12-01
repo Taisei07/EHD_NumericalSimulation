@@ -378,9 +378,9 @@ while t <= T:
                 i += 1
             i = 1
             j += 1
-        boundary_condition()
         #Gaussの法則
         phi_calculation()
+        boundary_condition()
         with open(os.path.join(str(value[1]),"phi_old.csv"), 'w') as file:
             writer = csv.writer(file, lineterminator = '\n')
             writer.writerows(phi_old)
