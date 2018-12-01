@@ -76,6 +76,7 @@ u_old = np.array([[0.0] * (n+1) for i in range(ms+1)])#ms:x方向,n:y方向
 v_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 p_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 phi = np.array([[0.0] * (n+1) for i in range(ms+1)])
+phi_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 q = np.array([[0.0] * (n+1) for i in range(ms+1)])
 Fx = np.array([[0.0] * (n+1) for i in range(ms+1)])
 Fy = np.array([[0.0] * (n+1) for i in range(ms+1)])
@@ -355,7 +356,12 @@ while t <= T:
         print str(value[1])
         print "t = " + str(t)
         print "m1 = " + str(m1)
-        phi_old = phi
+        while 0 <= j <= n:
+            while 0 <= i <= ms:
+                phi_old[i][j] = phi[i][j]
+                i += 1
+            i = 1
+            j += 1
         i = 1
         j = 1
         while 1 <= j <= n-1:
@@ -372,6 +378,12 @@ while t <= T:
         boundary_condition()
         #Gaussの法則
         phi_calculation()
+        with open(os.path.join(str(value[1]),"phi_old.csv"), 'w') as file:
+            writer = csv.writer(file, lineterminator = '\n')
+            writer.writerows(phi_old)
+        with open(os.path.join(str(value[1]),"phi_new.csv"), 'w') as file:
+            writer = csv.writer(file, lineterminator = '\n')
+            writer.writerows(phi)
         DPH = phi - phi_old
         DPmax = np.max(DPH)
         print "DPmax = " + str(DPmax)
