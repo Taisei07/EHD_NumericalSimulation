@@ -387,6 +387,9 @@ while t <= T:
         DPH = phi - phi_old
         DPmax = np.max(DPH)
         print "DPmax = " + str(DPmax)
+        with open(os.path.join(str(value[1]),"DPH.csv"), 'w') as file:
+            writer = csv.writer(file, lineterminator = '\n')
+            writer.writerows(DPH)
         m1 += 1
     csvout01()
     graph01()
