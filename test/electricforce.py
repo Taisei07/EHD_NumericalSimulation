@@ -356,6 +356,8 @@ while t <= T:
         print str(value[1])
         print "t = " + str(t)
         print "m1 = " + str(m1)
+        i = 0
+        j = 0
         while 0 <= j <= n:
             while 0 <= i <= ms:
                 phi_old[i][j] = phi[i][j]
