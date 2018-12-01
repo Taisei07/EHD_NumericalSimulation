@@ -381,17 +381,17 @@ while t <= T:
         boundary_condition()
         #Gaussの法則
         phi_calculation()
-        #with open(os.path.join(str(value[1]),"phi_old.csv"), 'w') as file:
-        #    writer = csv.writer(file, lineterminator = '\n')
-        #    writer.writerows(phi_old)
-        #with open(os.path.join(str(value[1]),"phi_new.csv"), 'w') as file:
-        #    writer = csv.writer(file, lineterminator = '\n')
-        #    writer.writerows(phi)
+        with open(os.path.join(str(value[1]),"phi_old.csv"), 'w') as file:
+            writer = csv.writer(file, lineterminator = '\n')
+            writer.writerows(phi_old)
+        with open(os.path.join(str(value[1]),"phi_new.csv"), 'w') as file:
+            writer = csv.writer(file, lineterminator = '\n')
+            writer.writerows(phi)
         DPmax = np.max(phi-phi_old)
         print "DPmax = " + str(DPmax)
-        #with open(os.path.join(str(value[1]),"DPH.csv"), 'w') as file:
-        #    writer = csv.writer(file, lineterminator = '\n')
-        #    writer.writerows(DPH)
+        with open(os.path.join(str(value[1]),"q.csv"), 'w') as file:
+            writer = csv.writer(file, lineterminator = '\n')
+            writer.writerows(q)
         q_old = q
         m1 += 1
     csvout01()
