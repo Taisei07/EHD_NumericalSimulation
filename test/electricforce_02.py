@@ -80,6 +80,7 @@ phi_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 q = np.array([[0.0] * (n+1) for i in range(ms+1)])
 Fx = np.array([[0.0] * (n+1) for i in range(ms+1)])
 Fy = np.array([[0.0] * (n+1) for i in range(ms+1)])
+F = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #対流項CNVと粘性項DIF配列設定
 CNVU = np.array([[0.0] * (n+1) for i in range(ms+1)])
@@ -211,10 +212,14 @@ def phi_calculation():
         m1 += 1
 phi_calculation()
 
+#電気的な力Fの計算
+F = np.sqrt(Fx**2 + Fy**2)
+
 #csvファイルで出力
 def csvout01():
     phi_out = phi.transpose()
     q_out = q.transpose()
+    F_out = F.transpose()
     import csv
     with open(os.path.join(str(value[1]),"phi_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
@@ -222,6 +227,9 @@ def csvout01():
     with open(os.path.join(str(value[1]),"q_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerows(q_out)
+    with open(os.path.join(str(value[1]),"F(t="+str(t)+")"+".csv"), 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
+        writer.writerows(F_out)
 csvout01()
 
 def csvout02():
