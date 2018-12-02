@@ -212,13 +212,12 @@ def phi_calculation():
         m1 += 1
 phi_calculation()
 
-#電気的な力Fの計算
-F = np.sqrt(Fx**2 + Fy**2)
-
 #csvファイルで出力
 def csvout01():
     phi_out = phi.transpose()
     q_out = q.transpose()
+    #電気的な力Fの計算
+    F = np.sqrt(Fx**2 + Fy**2)
     F_out = F.transpose()
     import csv
     with open(os.path.join(str(value[1]),"phi_(t="+str(t)+")"+".csv"), 'w') as file:
@@ -404,8 +403,6 @@ while t <= T:
         i = 1
         j += 1
     phi_calculation()
-    csvout01()
-    graph01()
     #電気的な力FX,Fyの配列設定
     i = 1
     j = 1
@@ -416,6 +413,8 @@ while t <= T:
             j += 1
         j = 1
         i += 1
+    csvout01()
+    graph01()
     #u_old,v_old仮値設定①粘性項・対流項配列の設定
     i = 1
     j = 1
