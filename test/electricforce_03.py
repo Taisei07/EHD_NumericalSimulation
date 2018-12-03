@@ -35,12 +35,24 @@ deltay = 0.00005#input("deltay(y方向要素間距離)[m] = ")
 omega = 0.5#input("omega(緩和係数) = ")
 M1 = 0.000001#input("M1(連続の式収束条件) = ")
 M2 = 0.00000001#input("M2(電位phiの収束条件) = ")
-B_x = 0.0019#input("B_x(electrode上の点Bのx座標)[m] = ")
-C_x = 0.0029#input("C_x(electrode上の点Cのx座標)[m] = ")
-D_x = 0.0031#input("D_x(electrode上の点Dのx座標)[m] = ")
-E_x = 0.0041#input("E_x(electrode上の点Eのx座標)[m] = ")
-phi_electrodeBC = 0#input("phi_electrodeBC(電極BCの電位)[V] = ")
-phi_electrodeDE = 100#input("phi_electrodeDE(電極DEの電位)[V] = ")
+electrode_number = 2#input("electrode_number(電極の数,2or4or8)[個] = ")
+E_x = 0.0019#input("E_x(electrode上の点Eのx座標)[m] = ")
+F_x = 0.0029#input("F_x(electrode上の点Cのx座標)[m] = ")
+G_x = 0.0031#input("G_x(electrode上の点Dのx座標)[m] = ")
+H_x = 0.0041#input("H_x(electrode上の点Eのx座標)[m] = ")
+if electrode_number == 4 or electrode_number == 8:
+    electrode_pattern = "line"#input("electrode_pattern(電極配置のパターン,line or topandbottom) = ")
+    if electrode_pattern == "line":
+        I_x = 0.0034#input("I_x(electrode上の点Iのx座標)[m] = ")
+        J_x = 0.0044#input("J_x(electrode上の点Jのx座標)[m] = ")
+        K_x = 0.0046#input("K_x(electrode上の点Kのx座標)[m] = ")
+        L_x = 0.0056#input("L_x(electrode上の点Lのx座標)[m] = ")
+phi_electrodeEF = 0#input("phi_electrodeEF(電極EFの電位)[V] = ")
+phi_electrodeGH = 100#input("phi_electrodeGH(電極GHの電位)[V] = ")
+if electrode_number == 4 or electrode_number == 8:
+    phi_electrodeIJ = 0#input("phi_electrodeIJ(電極IJの電位)[V] = ")
+    phi_electrodeKL = 100#input("phi_electrodeKL(電極KLの電位)[V] = ")
+
 
 #物性値、定数の出力
 constant_list = [\
@@ -59,8 +71,8 @@ constant_list = [\
 ["緩和係数omega",omega],\
 ["連続の式収束条件M1",M1],\
 ["電位phiの収束条件M2",M2],\
-["電極BCの電位phi_electrodeBC[V]",phi_electrodeBC],\
-["電極DEの電位phi_electrodeDE[V]",phi_electrodeDE]]
+["電極EFの電位phi_electrodeEF[V]",phi_electrodeEF],\
+["電極EHの電位phi_electrodeGH[V]",phi_electrodeGH]]
 with open(os.path.join(str(value[1]),"constant.csv"), 'w') as file:
     writer = csv.writer(file, lineterminator = '\n')
     writer.writerows(constant_list)
@@ -91,18 +103,18 @@ DIFV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #初期条件①電極周りの電位phi
-i = int(B_x / deltax)
-while int(B_x / deltax) <= i <= int(C_x / deltax):
-    phi[i][0] = phi_electrodeBC
+i = int(E_x / deltax)
+while int(E_x / deltax) <= i <= int(F_x / deltax):
+    phi[i][0] = phi_electrodeEF
     i += 1
-i = int(D_x / deltax)
-while int(D_x / deltax) <= i <= int(E_x / deltax):
-    phi[i][0] = phi_electrodeDE
+i = int(G_x / deltax)
+while int(G_x / deltax) <= i <= int(H_x / deltax):
+    phi[i][0] = phi_electrodeGH
     i += 1
 
 #境界条件の設定
 def boundary_condition():
-    #BoundaryAH
+    #BoundaryAD
     j = 0
     while 0 <= j <= n-1:
         u_old[0][j] = u_old[1][j]
@@ -111,7 +123,7 @@ def boundary_condition():
         phi[0][j] = phi[1][j]
         q[0][j] = q[0][j]
         j += 1
-    #WallAF
+    #WallAB
     i = 0
     while 0 <= i <= ms-1:
         u_old[i][0] = -u_old[i][1]
@@ -120,7 +132,7 @@ def boundary_condition():
         phi[i][0] = phi[i][1]
         q[i][0] = q[i][1]
         i += 1
-    #WallGH
+    #WallCD
     i = 0
     while 0 <= i <= ms-1:
         u_old[i][n] = -u_old[i][n-1]
@@ -129,7 +141,7 @@ def boundary_condition():
         phi[i][n] = phi[i][n-1]
         q[i][n] = q[i][n-1]
         i += 1
-    #BoundaryFG
+    #BoundaryBC
     j = 0
     while 0 <= j <= n-1:
         u_old[ms-1][j] = u_old[ms-2][j]
@@ -138,18 +150,46 @@ def boundary_condition():
         phi[ms][j] = phi[ms-1][j]
         q[ms][j] = q[ms-1][j]
         j += 1
-    #ElectrodeBC
-    i = int(B_x / deltax)
-    while int(B_x / deltax) <= i <= int(C_x / deltax):
-        phi[i][0] = phi_electrodeBC
+    #ElectrodeEF
+    i = int(E_x / deltax)
+    while int(E_x / deltax) <= i <= int(F_x / deltax):
+        phi[i][0] = phi_electrodeEF
         q[i][0] = - epsilon * (phi[i][1]-phi[i][0]) / (deltay**2)
         i += 1
-    #ElectrodeDE
-    i = int(D_x / deltax)
-    while int(D_x / deltax) <= i <= int(E_x / deltax):
-        phi[i][0] = phi_electrodeDE
+    #ElectrodeGH
+    i = int(G_x / deltax)
+    while int(G_x / deltax) <= i <= int(H_x / deltax):
+        phi[i][0] = phi_electrodeGH
         q[i][0] = - epsilon * (phi[i][1]-phi[i][0]) / (deltay**2)
         i += 1
+
+    if electrode_number == 4 or electrode_number == 8:
+        if electrode_pattern == "line":
+            #ElectrodeIJ
+            i = int(I_x / deltax)
+            while int(I_x / deltax) <= i <= int(J_x / deltax):
+                phi[i][0] = phi_electrodeIJ
+                q[i][0] = - epsilon * (phi[i][1]-phi[i][0]) / (deltay**2)
+                i += 1
+            #ElectrodeKL
+            i = int(K_x / deltax)
+            while int(K_x / deltax) <= i <= int(L_x / deltax):
+                phi[i][0] = phi_electrodeKL
+                q[i][0] = - epsilon * (phi[i][1]-phi[i][0]) / (deltay**2)
+                i += 1
+        elif electrode_pattern == "topandbottom":
+            #ElectrodeIJ
+            i = int(E_x / deltax)
+            while int(E_x / deltax) <= i <= int(F_x / deltax):
+                phi[i][n] = phi_electrodeIJ
+                q[i][n] = - epsilon * (phi[i][n-1]-phi[i][n]) / (deltay**2)
+                i += 1
+            #ElectrodeKL
+            i = int(G_x / deltax)
+            while int(G_x / deltax) <= i <= int(H_x / deltax):
+                phi[i][n] = phi_electrodeKL
+                q[i][n] = - epsilon * (phi[i][n-1]-phi[i][n]) / (deltay**2)
+                i += 1
 
 boundary_condition()
 
@@ -273,6 +313,23 @@ while 0 <= j <= n:
     j += 1
 X_out = X.transpose()
 Y_out = Y.transpose()
+def fig_electrode():
+    ax = plt.axes()
+    e1 = patches.Rectangle(xy=(E_x, -0.00005), width=F_x-E_x, height=0.00005, fc='y')
+    ax.add_patch(e1)
+    e2 = patches.Rectangle(xy=(G_x, -0.00005), width=H_x-G_x, height=0.00005, fc='y')
+    ax.add_patch(e2)
+    if electrode_number == 4 or electrode_number == 8:
+        if electrode_pattern == "line":
+            e3 = patches.Rectangle(xy=(I_x, -0.00005), width=J_x-I_x, height=0.00005, fc='y')
+            ax.add_patch(e3)
+            e4 = patches.Rectangle(xy=(K_x, -0.00005), width=L_x-K_x, height=0.00005, fc='y')
+            ax.add_patch(e4)
+        elif electrode_pattern == "topandbottom":
+            e3 = patches.Rectangle(xy=(E_x, H), width=E_x-F_x, height=0.00005, fc='y')
+            ax.add_patch(e3)
+            e4 = patches.Rectangle(xy=(G_x, H), width=H_x-G_x, height=0.00005, fc='y')
+            ax.add_patch(e4)
 def graph01():
     #配列変換・設定
     phi_out = phi.transpose()
@@ -293,11 +350,7 @@ def graph01():
     plt.xlim(-1.0*L/10, 11.0*L/10)
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
-    ax = plt.axes()
-    l = patches.Rectangle(xy=(B_x, -0.00005), width=C_x-B_x, height=0.00005, fc='y')
-    ax.add_patch(l)
-    r = patches.Rectangle(xy=(D_x, -0.00005), width=E_x-D_x, height=0.00005, fc='y')
-    ax.add_patch(r)
+    fig_electrode()
     plt.savefig("electricalcharge(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
@@ -312,11 +365,7 @@ def graph01():
     plt.xlim(-1.0*L/10, 11.0*L/10)
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
-    ax = plt.axes()
-    l = patches.Rectangle(xy=(B_x, -0.00005), width=C_x-B_x, height=0.00005, fc='y')
-    ax.add_patch(l)
-    r = patches.Rectangle(xy=(D_x, -0.00005), width=E_x-D_x, height=0.00005, fc='y')
-    ax.add_patch(r)
+    fig_electrode()
     plt.savefig("electricalpotential(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
@@ -333,11 +382,7 @@ def graph01():
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
     plt.draw()
-    ax = plt.axes()
-    l = patches.Rectangle(xy=(B_x, -0.00005), width=C_x-B_x, height=0.00005, fc='y')
-    ax.add_patch(l)
-    r = patches.Rectangle(xy=(D_x, -0.00005), width=E_x-D_x, height=0.00005, fc='y')
-    ax.add_patch(r)
+    fig_electrode()
     plt.savefig("F(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
@@ -368,11 +413,7 @@ def graph02():
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
     plt.draw()
-    ax = plt.axes()
-    l = patches.Rectangle(xy=(B_x, -0.00005), width=C_x-B_x, height=0.00005, fc='y')
-    ax.add_patch(l)
-    r = patches.Rectangle(xy=(D_x, -0.00005), width=E_x-D_x, height=0.00005, fc='y')
-    ax.add_patch(r)
+    fig_electrode()
     if m2 % 10000 == 0:
         plt.savefig("velocity(t=" + str(t) +",m2="+str(m2)+ ").png", dpi=600)
     else:
@@ -393,11 +434,7 @@ def graph02():
     plt.xlim(-1.0*L/10, 11.0*L/10)
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
-    ax = plt.axes()
-    l = patches.Rectangle(xy=(B_x, -0.00005), width=C_x-B_x, height=0.00005, fc='y')
-    ax.add_patch(l)
-    r = patches.Rectangle(xy=(D_x, -0.00005), width=E_x-D_x, height=0.00005, fc='y')
-    ax.add_patch(r)
+    fig_electrode()
     if m2 % 10000 == 0:
         plt.savefig("pressure(t=" + str(t) +",m2="+str(m2)+ ").png", dpi=600)
     else:
