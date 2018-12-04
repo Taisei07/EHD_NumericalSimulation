@@ -99,18 +99,13 @@ CNVU = np.array([[0.0] * (n+1) for i in range(ms+1)])
 CNVV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 DIFU = np.array([[0.0] * (n+1) for i in range(ms+1)])
 DIFV = np.array([[0.0] * (n+1) for i in range(ms+1)])
+#イオン移動度の項IMOB、イオン運動量の項IMOM、イオン拡散の項IDIF、導電率の項ICODの配列設定
+IMOB = np.array([[0.0] * (n+1) for i in range(ms+1)])
+IMOM = np.array([[0.0] * (n+1) for i in range(ms+1)])
+IDIF = np.array([[0.0] * (n+1) for i in range(ms+1)])
+ICOD = np.array([[0.0] * (n+1) for i in range(ms+1)])
 #連続の式DIV・電位DPHの配列設定
 DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
-
-#初期条件①電極周りの電位phi
-i = int(E_x / deltax)
-while int(E_x / deltax) <= i <= int(F_x / deltax):
-    phi[i][0] = phi_electrodeEF
-    i += 1
-i = int(G_x / deltax)
-while int(G_x / deltax) <= i <= int(H_x / deltax):
-    phi[i][0] = phi_electrodeGH
-    i += 1
 
 #境界条件の設定
 def boundary_condition():
@@ -120,8 +115,6 @@ def boundary_condition():
         u_old[0][j] = u_old[1][j]
         v_old[0][j] = v_old[1][j]
         p_old[0][j] = p_old[1][j]
-        phi[0][j] = phi[1][j]
-        q[0][j] = q[0][j]
         j += 1
     #WallAB
     i = 0
@@ -129,8 +122,6 @@ def boundary_condition():
         u_old[i][0] = -u_old[i][1]
         v_old[i][0] = 0.0
         p_old[i][0] = p_old[i][1]
-        phi[i][0] = phi[i][1]
-        q[i][0] = q[i][1]
         i += 1
     #WallCD
     i = 0
@@ -138,8 +129,6 @@ def boundary_condition():
         u_old[i][n] = -u_old[i][n-1]
         v_old[i][n-1] = 0.0
         p_old[i][n] = p_old[i][n-1]
-        phi[i][n] = phi[i][n-1]
-        q[i][n] = q[i][n-1]
         i += 1
     #BoundaryBC
     j = 0
@@ -147,20 +136,38 @@ def boundary_condition():
         u_old[ms-1][j] = u_old[ms-2][j]
         v_old[ms][j] = v_old[ms-1][j]
         p_old[ms][j] = p_old[ms-1][j]
+        j += 1
+
+def boundary_condition_phi():
+    #BoundaryAD
+    j = 0
+    while 0 <= j <= n-1:
+        phi[0][j] = phi[1][j]
+        j += 1
+    #WallAB
+    i = 0
+    while 0 <= i <= ms-1:
+        phi[i][0] = phi[i][1]
+        i += 1
+    #WallCD
+    i = 0
+    while 0 <= i <= ms-1:
+        phi[i][n] = phi[i][n-1]
+        i += 1
+    #BoundaryBC
+    j = 0
+    while 0 <= j <= n-1:
         phi[ms][j] = phi[ms-1][j]
-        q[ms][j] = q[ms-1][j]
         j += 1
     #ElectrodeEF
     i = int(E_x / deltax)
     while int(E_x / deltax) <= i <= int(F_x / deltax):
         phi[i][0] = phi_electrodeEF
-        q[i][0] = - epsilon * (phi[i][1]-phi[i][0]) / (deltay**2)
         i += 1
     #ElectrodeGH
     i = int(G_x / deltax)
     while int(G_x / deltax) <= i <= int(H_x / deltax):
         phi[i][0] = phi_electrodeGH
-        q[i][0] = - epsilon * (phi[i][1]-phi[i][0]) / (deltay**2)
         i += 1
 
     if electrode_number == 4 or electrode_number == 8:
@@ -169,54 +176,87 @@ def boundary_condition():
             i = int(I_x / deltax)
             while int(I_x / deltax) <= i <= int(J_x / deltax):
                 phi[i][0] = phi_electrodeIJ
-                q[i][0] = - epsilon * (phi[i][1]-phi[i][0]) / (deltay**2)
                 i += 1
             #ElectrodeKL
             i = int(K_x / deltax)
             while int(K_x / deltax) <= i <= int(L_x / deltax):
                 phi[i][0] = phi_electrodeKL
-                q[i][0] = - epsilon * (phi[i][1]-phi[i][0]) / (deltay**2)
                 i += 1
         elif electrode_pattern == "topandbottom":
             #ElectrodeIJ
             i = int(E_x / deltax)
             while int(E_x / deltax) <= i <= int(F_x / deltax):
                 phi[i][n] = phi_electrodeIJ
-                q[i][n] = - epsilon * (phi[i][n-1]-phi[i][n]) / (deltay**2)
                 i += 1
             #ElectrodeKL
             i = int(G_x / deltax)
             while int(G_x / deltax) <= i <= int(H_x / deltax):
                 phi[i][n] = phi_electrodeKL
-                q[i][n] = - epsilon * (phi[i][n-1]-phi[i][n]) / (deltay**2)
                 i += 1
 
-boundary_condition()
+def boundary_condition_electrode(A,B):
+    i = int(A / deltax)
+    while int(A / deltax) <= i <= int(B / deltax):
+        q[i][1] = - epsilon * (phi[i][2]-phi[i][1]) / (deltay**2)
+        q[i][0] = 0
+        i += 1
 
-#初期条件②電荷密度qを0に
-i = 0
-j = 0
-while 0 <= i <= ms:
-    while 0 <= j <= n:
-        q[i][j] = 0
-        j += 1
+def boundary_condition_q():
+    #BoundaryAD
     j = 0
-    i += 1
+    while 0 <= j <= n-1:
+        q[0][j] = q[0][j]
+        j += 1
+    #WallAB
+    i = 0
+    while 0 <= i <= ms-1:
+        q[i][0] = q[i][1]
+        i += 1
+    #WallCD
+    i = 0
+    while 0 <= i <= ms-1:
+        q[i][n] = q[i][n-1]
+        i += 1
+    #BoundaryBC
+    j = 0
+    while 0 <= j <= n-1:
+        q[ms][j] = q[ms-1][j]
+        j += 1
+    #ElectrodeEF
+    boundary_condition_electrode(E_x,F_x)
+    #ElectrodeGH
+    boundary_condition_electrode(G_x,H_x)
+
+    if electrode_number == 4 or electrode_number == 8:
+        if electrode_pattern == "line":
+            #ElectrodeIJ
+            boundary_condition_electrode(I_x,J_x)
+            #ElectrodeKL
+            boundary_condition_electrode(K_x,L_x)
+        elif electrode_pattern == "topandbottom":
+            #ElectrodeIJ
+            i = int(E_x / deltax)
+            while int(E_x / deltax) <= i <= int(F_x / deltax):
+                q[i][n-1] = - epsilon * (phi[i][n-2]-phi[i][n-1]) / (deltay**2)
+                q[i][n] = 0
+                i += 1
+            #ElectrodeKL
+            i = int(G_x / deltax)
+            while int(G_x / deltax) <= i <= int(H_x / deltax):
+                q[i][n-1] = - epsilon * (phi[i][n-2]-phi[i][n-1]) / (deltay**2)
+                q[i][n] = 0
+                i += 1
 
 #初期におけるDIV
-i = 1
-j = 1
-while 1 <= i <= ms-1:
-    while 1 <= j <= n-1:
-        DIV[i][j] = abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay)
-        j += 1
+def DIV_calculation():
+    i = 1
     j = 1
-    i += 1
-
-#初期値の計算
-t = 0
-m1 = 1
-m2 = 1
+    while 1 <= i <= ms-1:
+        while 1 <= j <= n-1:
+            DIV[i][j] = abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay)
+            j += 1
+        j = 1
+        i += 1
 
 #過去の電位phiを更新する
 def phi_old_def():
@@ -246,18 +286,28 @@ def phi_calculation():
                 i += 1
             i = 1
             j += 1
-        boundary_condition()
+        boundary_condition_phi()
         DPmax = np.max(phi-phi_old)
         print "DPmax = " + str(DPmax)
         m1 += 1
-phi_calculation()
+
+#電気的な力Fの計算
+def F_calculation():
+    i = 0
+    j = 0
+    while 0 <= i <= ms:
+        while 0 <= j <= n:
+            F[i][j] = np.sqrt(Fx[i][j]**2+Fy[i][j]**2)
+            j += 1
+        j = 1
+        i += 1
 
 #csvファイルで出力
 def csvout01():
     phi_out = phi.transpose()
     q_out = q.transpose()
     #電気的な力Fの計算
-    F = np.sqrt(Fx**2 + Fy**2)
+    F_calculation()
     F_out = F.transpose()
     import csv
     with open(os.path.join(str(value[1]),"phi_(t="+str(t)+")"+".csv"), 'w') as file:
@@ -269,7 +319,6 @@ def csvout01():
     with open(os.path.join(str(value[1]),"F(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerows(F_out)
-csvout01()
 
 def csvout02():
     u_out = u_old.transpose()
@@ -289,7 +338,6 @@ def csvout02():
     with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerows(DIV_out)
-csvout02()
 
 
 #グラフを作成して保存する
@@ -298,7 +346,7 @@ i = 0
 j = 0
 while 0 <= j <= n:
     while 0 <= i <= ms:
-        X[i][j] = deltax * i
+        X[i][j] = deltax * (i-0.5)
         i += 1
     i = 0
     j += 1
@@ -307,7 +355,7 @@ i = 0
 j = 0
 while 0 <= j <= n:
     while 0 <= i <= ms:
-        Y[i][j] = deltay * j
+        Y[i][j] = deltay * (j-0.5)
         i += 1
     i = 0
     j += 1
@@ -319,6 +367,8 @@ def fig_electrode():
     ax.add_patch(e1)
     e2 = patches.Rectangle(xy=(G_x, -0.00005), width=H_x-G_x, height=0.00005, fc='y')
     ax.add_patch(e2)
+    r = patches.Rectangle(xy=(0, 0), width=L, height=H, ec='#000000', fill=False)
+    ax.add_patch(r)
     if electrode_number == 4 or electrode_number == 8:
         if electrode_pattern == "line":
             e3 = patches.Rectangle(xy=(I_x, -0.00005), width=J_x-I_x, height=0.00005, fc='y')
@@ -336,7 +386,7 @@ def graph01():
     q_out = q.transpose()
     Fx_out = Fx.transpose()
     Fy_out = Fy.transpose()
-    F = np.sqrt(Fx**2 + Fy**2)
+    F_calculation()
     F_out = F.transpose()
     #ディレクトリ移動
     os.chdir(str(value[1]))
@@ -388,7 +438,6 @@ def graph01():
     plt.clf()
     plt.close()
     os.chdir('../')
-graph01()
 
 def graph02():
     #配列変換・設定
@@ -443,10 +492,24 @@ def graph02():
     plt.clf()
     plt.close()
     os.chdir('../')
-graph02()
+
+def reset_uv():
+    u_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
+    v_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 
 print "Calculation starts"
+#初期状態の計算
+t = 0
+m1 = 1
+m2 = 1
+boundary_condition_phi()
+phi_calculation()
+DIV_calculation()
+csvout01()
+csvout02()
+graph01()
+graph02()
 t = deltaT
 while t <= T:
     print "t =" + str(t)
@@ -455,23 +518,30 @@ while t <= T:
     j = 1
     while 1 <= j <= n-1:
         while 1 <= i <= ms-1:
-            q[i][j] \
-            = q[i][j] - \
-            deltaT * (-K * (q[i][j] * ((phi[i+1][j] - 2*phi[i][j] + phi[i-1][j]) / (deltax**2) + (phi[i][j+1] - 2*phi[i][j] + phi[i][j-1]) / (deltay**2)) + (phi[i+1][j] + phi[i-1][j]) / (2*deltax) * (q[i+1][j] - q[i-1][j]) / (2*deltax) + (phi[i][j+1] + phi[i][j-1]) / (2*deltay) * (q[i][j+1] - q[i][j-1]) / (2*deltay)) \
-            + q[i][j] * ((u_old[i][j] - u_old[i-1][j]) / deltax + (v_old[i][j] - v_old[i][j-1]) / deltay) \
-            + (u_old[i][j] + u_old[i-1][j]) / 2 * (q[i+1][j] - q[i-1][j]) / (2*deltax) + (v_old[i][j] + v_old[i][j-1]) / 2 * (q[i][j+1]-q[i][j-1]) / (2*deltay) \
-            - Di * ((q[i+1][j] - 2 * q[i][j] + q[i-1][j]) / (deltax**2) + (q[i][j+1] - 2 * q[i][j] + q[i][j-1]) / (deltay**2)) - sigma * ((phi[i+1][j] - 2 * phi[i][j] + phi[i-1][j]) / (deltax**2) + (phi[i][j+1] - 2 * phi[i][j] + phi[i][j-1]) / (deltay**2)))
+            IMOB[i][j] = 1.0 * q[i][j] * q[i][j] / epsilon + 1.0 * (phi[i+1][j] + phi[i-1][j]) / (2*deltax) * (q[i+1][j] - q[i-1][j]) / (2*deltax) + 1.0 * (phi[i][j+1] + phi[i][j-1]) / (2*deltay) * (q[i][j+1] - q[i][j-1]) / (2*deltay)
+            IMOM[i][j] = 1.0 * q[i][j] * ((u_old[i][j] - u_old[i-1][j]) / deltax + 1.0 * (v_old[i][j] - v_old[i][j-1]) / deltay) + 1.0 * (u_old[i][j] + u_old[i-1][j]) / 2 * (q[i+1][j] - q[i-1][j]) / (2*deltax) + 1.0 * (v_old[i][j] + v_old[i][j-1]) / 2 * (q[i][j+1]-q[i][j-1]) / (2*deltay)
+            IDIF[i][j] = 1.0 * (q[i+1][j] - 2 * q[i][j] + q[i-1][j]) / (deltax**2) + 1.0 * (q[i][j+1] - 2 * q[i][j] + q[i][j-1]) / (deltay**2)
+            ICOD[i][j] = 1.0 * q[i][j] / epsilon
             i += 1
         i = 1
         j += 1
+    i = 1
+    j = 1
+    while 1 <= j <= n-1:
+        while 1 <= i <= ms-1:
+            q[i][j] = q[i][j] + deltaT * (K * IMOB[i][j] - IMOM[i][j] + Di * IDIF[i][j] + sigma * ICOD[i][j])
+            i += 1
+        i = 1
+        j += 1
+    boundary_condition_q()
     phi_calculation()
     #電気的な力FX,Fyの配列設定
     i = 1
     j = 1
     while 1 <= i <= ms-1:
         while 1 <= j <= n-1:
-            Fx[i][j] = - (q[i+1][j]+q[i][j])/2 * (phi[i+1][j]-phi[i][j])/deltax
-            Fy[i][j] = - (q[i][j+1]+q[i][j])/2 * (phi[i][j+1]-phi[i][j])/deltay
+            Fx[i][j] = - 1.0 * (q[i+1][j]+q[i][j]) / 2.0 * (phi[i+1][j]-phi[i][j]) / deltax
+            Fy[i][j] = - 1.0 * (q[i][j+1]+q[i][j]) / 2.0 * (phi[i][j+1]-phi[i][j]) / deltay
             j += 1
         j = 1
         i += 1
@@ -537,14 +607,7 @@ while t <= T:
         boundary_condition()
 
         #連続の式の収束条件
-        i = 1
-        j = 1
-        while 1 <= i <= ms-1:
-            while 1 <= j <= n-1:
-                DIV[i][j] = abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay)
-                j += 1
-            j = 1
-            i += 1
+        DIV_calculation()
         #---通常モード---
         Dmax = np.max(DIV)
         #---↑---
