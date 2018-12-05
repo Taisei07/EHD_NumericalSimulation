@@ -29,7 +29,7 @@ sigma = 0.000000001#input("sigma(導電率)[A/Vm] = ")
 print "定数入力"
 H = 0.002#input("H(流れ場y方向長さ)[m] = ")
 L = 0.006#input("L(流れ場x方向長さ)[m] = ")
-T = 0.5#input("T(移流時間)[s] = ")
+T = input("T(移流時間)[s] = ")
 deltaT = 0.00001#input("deltaT(時間刻み)[s] = ")
 deltax = 0.00005#input("deltax(x方向要素間距離)[m] = ")
 deltay = 0.00005#input("deltay(y方向要素間距離)[m] = ")
@@ -164,43 +164,43 @@ def boundary_condition_phi():
         phi[ms][j] = phi[ms-1][j]
         j += 1
     #ElectrodeEF
-    i = int(E_x / deltax)
-    while int(E_x / deltax) <= i <= int(F_x / deltax):
+    i = int(E_x / deltax + 1)
+    while int(E_x / deltax + 1) <= i <= int(F_x / deltax + 1):
         phi[i][0] = phi_electrodeEF
         i += 1
     #ElectrodeGH
-    i = int(G_x / deltax)
-    while int(G_x / deltax) <= i <= int(H_x / deltax):
+    i = int(G_x / deltax + 1)
+    while int(G_x / deltax + 1) <= i <= int(H_x / deltax + 1):
         phi[i][0] = phi_electrodeGH
         i += 1
 
     if electrode_number == 4 or electrode_number == 8:
         if electrode_pattern == "line":
             #ElectrodeIJ
-            i = int(I_x / deltax)
-            while int(I_x / deltax) <= i <= int(J_x / deltax):
+            i = int(I_x / deltax + 1)
+            while int(I_x / deltax + 1) <= i <= int(J_x / deltax + 1):
                 phi[i][0] = phi_electrodeIJ
                 i += 1
             #ElectrodeKL
-            i = int(K_x / deltax)
-            while int(K_x / deltax) <= i <= int(L_x / deltax):
+            i = int(K_x / deltax + 1)
+            while int(K_x / deltax + 1) <= i <= int(L_x / deltax + 1):
                 phi[i][0] = phi_electrodeKL
                 i += 1
         elif electrode_pattern == "topandbottom":
             #ElectrodeIJ
-            i = int(E_x / deltax)
-            while int(E_x / deltax) <= i <= int(F_x / deltax):
+            i = int(E_x / deltax + 1)
+            while int(E_x / deltax + 1) <= i <= int(F_x / deltax + 1):
                 phi[i][n] = phi_electrodeIJ
                 i += 1
             #ElectrodeKL
             i = int(G_x / deltax)
-            while int(G_x / deltax) <= i <= int(H_x / deltax):
+            while int(G_x / deltax + 1) <= i <= int(H_x / deltax + 1):
                 phi[i][n] = phi_electrodeKL
                 i += 1
 
 def boundary_condition_electrode(A,B):
-    i = int(A / deltax)
-    while int(A / deltax) <= i <= int(B / deltax):
+    i = int(A / deltax + 1)
+    while int(A / deltax + 1) <= i <= int(B / deltax + 1):
         q[i][1] = - epsilon * (phi[i][2]-phi[i][1]) / (deltay**2)
         q[i][0] = 0
         i += 1
@@ -239,14 +239,14 @@ def boundary_condition_q():
             boundary_condition_electrode(K_x,L_x)
         elif electrode_pattern == "topandbottom":
             #ElectrodeIJ
-            i = int(E_x / deltax)
-            while int(E_x / deltax) <= i <= int(F_x / deltax):
+            i = int(E_x / deltax + 1)
+            while int(E_x / deltax + 1) <= i <= int(F_x / deltax + 1):
                 q[i][n-1] = - epsilon * (phi[i][n-2]-phi[i][n-1]) / (deltay**2)
                 q[i][n] = 0
                 i += 1
             #ElectrodeKL
-            i = int(G_x / deltax)
-            while int(G_x / deltax) <= i <= int(H_x / deltax):
+            i = int(G_x / deltax + 1)
+            while int(G_x / deltax + 1) <= i <= int(H_x / deltax + 1):
                 q[i][n-1] = - epsilon * (phi[i][n-2]-phi[i][n-1]) / (deltay**2)
                 q[i][n] = 0
                 i += 1
@@ -430,8 +430,8 @@ def graph01():
     phi_out = phi.transpose()
     q_out = q.transpose()
     E_out = E.transpose()
-    Ex_out = E.transpose()
-    Ey_out = E.transpose()
+    Ex_out = Ex.transpose()
+    Ey_out = Ey.transpose()
     Fx_out = Fx.transpose()
     Fy_out = Fy.transpose()
     F_calculation()
