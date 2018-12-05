@@ -362,26 +362,49 @@ def csvout02():
 
 
 #グラフを作成して保存する
-X = np.array([[0.0] * (n+1) for i in range(ms+1)])
+#分布図用座標
+X1 = np.array([[0.0] * (n+1) for i in range(ms+1)])
 i = 0
 j = 0
 while 0 <= j <= n:
     while 0 <= i <= ms:
-        X[i][j] = deltax * (i-0.5)
+        X1[i][j] = deltax * (i-0.5)
         i += 1
     i = 0
     j += 1
-Y = np.array([[0.0] * (n+1) for i in range(ms+1)])
+Y1 = np.array([[0.0] * (n+1) for i in range(ms+1)])
 i = 0
 j = 0
 while 0 <= j <= n:
     while 0 <= i <= ms:
-        Y[i][j] = deltay * (j-0.5)
+        Y1[i][j] = deltay * (j-0.5)
         i += 1
     i = 0
     j += 1
-X_out = X.transpose()
-Y_out = Y.transpose()
+X1_out = X1.transpose()
+Y1_out = Y1.transpose()
+#ベクトル用座標
+X2 = np.array([[0.0] * (n+1) for i in range(ms+1)])
+i = 0
+j = 0
+while 0 <= j <= n:
+    while 0 <= i <= ms:
+        X2[i][j] = deltax * i
+        i += 1
+    i = 0
+    j += 1
+Y2 = np.array([[0.0] * (n+1) for i in range(ms+1)])
+i = 0
+j = 0
+while 0 <= j <= n:
+    while 0 <= i <= ms:
+        Y2[i][j] = deltay * j
+        i += 1
+    i = 0
+    j += 1
+X2_out = X2.transpose()
+Y2_out = Y2.transpose()
+
 def fig_electrode():
     ax = plt.axes()
     e1 = patches.Rectangle(xy=(E_x, -0.00005), width=F_x-E_x, height=0.00005, fc='y')
@@ -415,7 +438,7 @@ def graph01():
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #電荷密度分布作成
-    plt.pcolor(X_out, Y_out, q_out)
+    plt.pcolor(X1_out, Y1_out, q_out)
     plt.colorbar()
     plt.axis('equal')
     plt.title('electricalcharge_distribution(t='+str(t)+')')
@@ -430,7 +453,7 @@ def graph01():
     plt.clf()
     plt.close()
     #電位分布作成
-    plt.pcolor(X_out, Y_out, phi_out)
+    plt.pcolor(X1_out, Y1_out, phi_out)
     plt.colorbar()
     plt.axis('equal')
     plt.title('electricalpotential_distribution(t='+str(t)+')')
@@ -445,9 +468,9 @@ def graph01():
     plt.clf()
     plt.close()
     #電場強度ベクトル作成
-    plt.pcolor(X_out, Y_out, E_out)
+    plt.pcolor(X1_out, Y1_out, E_out)
     plt.colorbar()
-    plt.quiver(X_out, Y_out, Ex_out, Ey_out, angles='xy', scale_units='xy', scale=np.max(E_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.quiver(X2_out, Y2_out, Ex_out, Ey_out, angles='xy', scale_units='xy', scale=np.max(E_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
     plt.axis('equal')
     plt.title('electrofield_vector(t='+str(t)+')')
     plt.xlabel('x')
@@ -462,9 +485,9 @@ def graph01():
     plt.clf()
     plt.close()
     #電気的な力Fベクトル作成
-    plt.pcolor(X_out, Y_out, F_out)
+    plt.pcolor(X1_out, Y1_out, F_out)
     plt.colorbar()
-    plt.quiver(X_out, Y_out, Fx_out, Fy_out, angles='xy', scale_units='xy', scale=np.max(F_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.quiver(X2_out, Y2_out, Fx_out, Fy_out, angles='xy', scale_units='xy', scale=np.max(F_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
     plt.axis('equal')
     plt.title('F_vector(t='+str(t)+')')
     plt.xlabel('x')
@@ -489,9 +512,9 @@ def graph02():
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
-    plt.pcolor(X_out, Y_out, velocity_out)
+    plt.pcolor(X1_out, Y1_out, velocity_out)
     plt.colorbar()
-    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.quiver(X2_out, Y2_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
     plt.axis('equal')
     if m2 % 10000 == 0:
         plt.title('velocity_vector(t='+str(t)+',m2='+str(m2)+')')
@@ -512,7 +535,7 @@ def graph02():
     plt.clf()
     plt.close()
     #圧力分布作成
-    plt.pcolor(X_out, Y_out, p_out)
+    plt.pcolor(X1_out, Y1_out, p_out)
     plt.colorbar()
     plt.axis('equal')
     if m2 % 10000 == 0:
