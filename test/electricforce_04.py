@@ -14,6 +14,7 @@ os.chdir('/media/pascal/HD-GDU3/Tajima_backup/EHD/result')
 os.mkdir(str(value[1]))
 import time
 start_time = time.time()
+import requests
 
 #物性値
 print "物性値入力"
@@ -714,3 +715,11 @@ while t <= T:
     #時間を進める
     t = t + deltaT
 print "Calculation ends"
+
+def slack_mention():
+    requests.post('https://hooks.slack.com/services/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', data = json.dumps({
+        'text': str(value[1]) + \n + 'process_time : ' + str(process_time), # 投稿するテキスト
+        'username': u'ghost', # 投稿のユーザー名
+        'icon_emoji': u':ghost:', # 投稿のプロフィール画像に入れる絵文字
+        'link_names': 1, # メンションを有効にする
+    }))
