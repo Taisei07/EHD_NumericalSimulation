@@ -559,10 +559,10 @@ while t <= T:
     j = 1
     while 1 <= j <= n-1:
         while 1 <= i <= ms-1:
-            IMOB[i][j] = 1.0 * q[i][j] * q[i][j] / epsilon + 1.0 * (phi[i+1][j] + phi[i-1][j]) / (2*deltax) * (q[i+1][j] - q[i-1][j]) / (2*deltax) + 1.0 * (phi[i][j+1] + phi[i][j-1]) / (2*deltay) * (q[i][j+1] - q[i][j-1]) / (2*deltay)
+            IMOB[i][j] = 1.0 * q[i][j] * ((Ex[i][j]-Ex[i-1][j])/deltax + (Ey[i][j]-Ey[i][j-1])/deltay) + 1.0 * ((Ex[i+1][j]+Ex[i][j])/2*(q[i+1][j]-q[i][j])/2/deltax + (Ey[i][j+1]+Ey[i][j])/2*(q[i][j+1]-q[i][j])/2/deltay)
             IMOM[i][j] = 1.0 * q[i][j] * ((u_old[i][j] - u_old[i-1][j]) / deltax + 1.0 * (v_old[i][j] - v_old[i][j-1]) / deltay) + 1.0 * (u_old[i][j] + u_old[i-1][j]) / 2 * (q[i+1][j] - q[i-1][j]) / (2*deltax) + 1.0 * (v_old[i][j] + v_old[i][j-1]) / 2 * (q[i][j+1]-q[i][j-1]) / (2*deltay)
             IDIF[i][j] = 1.0 * (q[i+1][j] - 2 * q[i][j] + q[i-1][j]) / (deltax**2) + 1.0 * (q[i][j+1] - 2 * q[i][j] + q[i][j-1]) / (deltay**2)
-            ICOD[i][j] = 1.0 * q[i][j] / epsilon
+            ICOD[i][j] = 1.0 * ((Ex[i][j]-Ex[i-1][j])/deltax + (Ey[i][j]-Ey[i][j-1])/deltay)
             i += 1
         i = 1
         j += 1
@@ -570,7 +570,7 @@ while t <= T:
     j = 1
     while 1 <= j <= n-1:
         while 1 <= i <= ms-1:
-            q[i][j] = q[i][j] + deltaT * (K * IMOB[i][j] - IMOM[i][j] + Di * IDIF[i][j] + sigma * ICOD[i][j])
+            q[i][j] = q[i][j] - deltaT * (K * IMOB[i][j] + IMOM[i][j] - Di * IDIF[i][j] + sigma * ICOD[i][j])
             i += 1
         i = 1
         j += 1
@@ -581,8 +581,8 @@ while t <= T:
     j = 1
     while 1 <= i <= ms-1:
         while 1 <= j <= n-1:
-            Fx[i][j] = - 1.0 * (q[i+1][j]+q[i][j]) / 2.0 * (phi[i+1][j]-phi[i][j]) / deltax
-            Fy[i][j] = - 1.0 * (q[i][j+1]+q[i][j]) / 2.0 * (phi[i][j+1]-phi[i][j]) / deltay
+            Fx[i][j] = - 1.0 * (q[i+1][j]+q[i][j]) / 2.0 * Ex[i][j]
+            Fy[i][j] = - 1.0 * (q[i][j+1]+q[i][j]) / 2.0 * Ey[i][j]
             j += 1
         j = 1
         i += 1
