@@ -599,7 +599,9 @@ graph01()
 graph02()
 slack_mention()
 figure_upload("electricalcharge(t=" + str(t) + ").png")
-figure_upload("electricalcharge(t=" + str(t) + ").png")
+figure_upload("electricalpotential(t=" + str(t) + ").png")
+figure_upload("electrofield(t=" + str(t) + ").png")
+figure_upload("F(t=" + str(t) + ").png")
 t = deltaT
 while t <= T:
     print "t =" + str(t)
@@ -736,7 +738,18 @@ while t <= T:
     if t == deltaT or int(t/deltaT) % 20 == 0:
         csvout02()
         graph02()
+    if t == deltaT:
+        slack_mention()
+        figure_upload("electricalcharge(t=" + str(t) + ").png")
+        figure_upload("electricalpotential(t=" + str(t) + ").png")
+        figure_upload("electrofield(t=" + str(t) + ").png")
+        figure_upload("F(t=" + str(t) + ").png")
 
     #時間を進める
     t = t + deltaT
 print "Calculation ends"
+slack_mention()
+figure_upload("electricalcharge(t=" + str(t) + ").png")
+figure_upload("electricalpotential(t=" + str(t) + ").png")
+figure_upload("electrofield(t=" + str(t) + ").png")
+figure_upload("F(t=" + str(t) + ").png")
