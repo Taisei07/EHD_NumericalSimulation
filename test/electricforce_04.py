@@ -37,7 +37,7 @@ def figure_upload(A):
     'token':TOKEN,
     'channels':CHANNEL,
     'filename':A,
-    'initial_comment': str(value[1]) + '_' + A + '(t = ' + str(t) + ')',
+    'initial_comment': str(value[1]) + '_' + A,
     'title': A
     }
     requests.post(url="https://slack.com/api/files.upload",params=param, files=files)
@@ -750,6 +750,8 @@ while t <= T:
         figure_upload("electricalpotential(t=" + str(t) + ").png")
         figure_upload("electrofield(t=" + str(t) + ").png")
         figure_upload("F(t=" + str(t) + ").png")
+        figure_upload("velocity(t=" + str(t) + ").png")
+        figure_upload("pressure(t=" + str(t) + ").png")
 
     #時間を進める
     t = t + deltaT
@@ -759,3 +761,5 @@ figure_upload("electricalcharge(t=" + str(t) + ").png")
 figure_upload("electricalpotential(t=" + str(t) + ").png")
 figure_upload("electrofield(t=" + str(t) + ").png")
 figure_upload("F(t=" + str(t) + ").png")
+figure_upload("velocity(t=" + str(t) + ").png")
+figure_upload("pressure(t=" + str(t) + ").png")
