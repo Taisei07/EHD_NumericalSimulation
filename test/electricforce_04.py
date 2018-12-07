@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from numpy.random import *
 from matplotlib import animation
 import matplotlib.patches as patches
+import json
+import requests
 import os
 import csv
 import sys
