@@ -604,10 +604,8 @@ csvout02()
 graph01()
 graph02()
 slack_mention()
-figure_upload("electricalcharge(t=" + str(t) + ").png")
 figure_upload("electricalpotential(t=" + str(t) + ").png")
 figure_upload("electrofield(t=" + str(t) + ").png")
-figure_upload("F(t=" + str(t) + ").png")
 t = deltaT
 while t <= T:
     print "t =" + str(t)
