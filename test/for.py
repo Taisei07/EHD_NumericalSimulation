@@ -16,7 +16,7 @@ requests.post('https://hooks.slack.com/services/T9VCMG1QR/BEK19U49W/FEbd9qAfZCK0
     'icon_emoji': u':ghost:', # 投稿のプロフィール画像に入れる絵文字
     'link_names': 1, # メンションを有効にする
 }))
-
+A = 'figure.png'
 def figure_upload(A):
     TOKEN = 'xoxb-335429545841-497705575700-mYE1iTJjnFu05W2Cs1nLISav'
     CHANNEL = 'CELQHE10X'
@@ -30,4 +30,4 @@ def figure_upload(A):
     }
     requests.post(url="https://slack.com/api/files.upload",params=param, files=files)
 
-figure_upload(figure.png)
+figure_upload()
