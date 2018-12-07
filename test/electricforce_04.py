@@ -449,7 +449,7 @@ def fig_electrode():
             e4 = patches.Rectangle(xy=(K_x, -0.00005), width=L_x-K_x, height=0.00005, fc='y')
             ax.add_patch(e4)
         elif electrode_pattern == "topandbottom":
-            e3 = patches.Rectangle(xy=(E_x, H), width=E_x-F_x, height=0.00005, fc='y')
+            e3 = patches.Rectangle(xy=(E_x, H), width=F_x-E_x, height=0.00005, fc='y')
             ax.add_patch(e3)
             e4 = patches.Rectangle(xy=(G_x, H), width=H_x-G_x, height=0.00005, fc='y')
             ax.add_patch(e4)
