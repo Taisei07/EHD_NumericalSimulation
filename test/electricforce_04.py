@@ -29,6 +29,7 @@ def slack_mention():
     }))
 
 def figure_upload(A):
+    os.chdir(str(value[1]))
     TOKEN = 'xoxb-335429545841-497705575700-mYE1iTJjnFu05W2Cs1nLISav'
     CHANNEL = 'CELQHE10X'
     files = {'file': open(A, 'rb')}
@@ -40,6 +41,7 @@ def figure_upload(A):
     'title': A
     }
     requests.post(url="https://slack.com/api/files.upload",params=param, files=files)
+    os.chdir('../')
 
 #物性値
 print "物性値入力"
