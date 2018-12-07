@@ -20,6 +20,7 @@ import requests
 
 #slack通知
 def slack_mention():
+    process_time = time.time() - start_time
     requests.post('https://hooks.slack.com/services/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', data = json.dumps({
         'text': str(value[1]) + '\n' + 'process_time : ' + str(process_time), # 投稿するテキスト
         'username': u'ghost', # 投稿のユーザー名
