@@ -37,7 +37,7 @@ def figure_upload(A):
     'token':TOKEN,
     'channels':CHANNEL,
     'filename':A,
-    'initial_comment': str(value[1]) + '(t = ' + str(t) + ')',
+    'initial_comment': str(value[1]) + '_' + A + '(t = ' + str(t) + ')',
     'title': A
     }
     requests.post(url="https://slack.com/api/files.upload",params=param, files=files)
