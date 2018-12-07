@@ -30,4 +30,4 @@ def figure_upload(A):
     }
     requests.post(url="https://slack.com/api/files.upload",params=param, files=files)
 
-figure_upload('figure.png')
+figure_upload('figure' + '.png')

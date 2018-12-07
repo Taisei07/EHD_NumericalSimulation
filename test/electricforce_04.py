@@ -16,6 +16,28 @@ import time
 start_time = time.time()
 import requests
 
+#slack通知
+def slack_mention():
+    requests.post('https://hooks.slack.com/services/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', data = json.dumps({
+        'text': str(value[1]) + '\n' + 'process_time : ' + str(process_time), # 投稿するテキスト
+        'username': u'ghost', # 投稿のユーザー名
+        'icon_emoji': u':ghost:', # 投稿のプロフィール画像に入れる絵文字
+        'link_names': 1, # メンションを有効にする
+    }))
+
+def figure_upload(A):
+    TOKEN = 'xoxb-335429545841-497705575700-mYE1iTJjnFu05W2Cs1nLISav'
+    CHANNEL = 'CELQHE10X'
+    files = {'file': open(A, 'rb')}
+    param = {
+    'token':TOKEN,
+    'channels':CHANNEL,
+    'filename':A,
+    'initial_comment': str(value[1]) + '(t = ' + str(t) + ')',
+    'title': A
+    }
+    requests.post(url="https://slack.com/api/files.upload",params=param, files=files)
+
 #物性値
 print "物性値入力"
 rho = 950#input("rho(流体密度)[kg/m^3] = ")
@@ -575,6 +597,9 @@ csvout01()
 csvout02()
 graph01()
 graph02()
+slack_mention()
+figure_upload("electricalcharge(t=" + str(t) + ").png")
+figure_upload("electricalcharge(t=" + str(t) + ").png")
 t = deltaT
 while t <= T:
     print "t =" + str(t)
@@ -715,12 +740,3 @@ while t <= T:
     #時間を進める
     t = t + deltaT
 print "Calculation ends"
-
-def slack_mention():
-    requests.post('https://hooks.slack.com/services/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', data = json.dumps({
-        'text': str(value[1]) + '\n' + 'process_time : ' + str(process_time), # 投稿するテキスト
-        'username': u'ghost', # 投稿のユーザー名
-        'icon_emoji': u':ghost:', # 投稿のプロフィール画像に入れる絵文字
-        'link_names': 1, # メンションを有効にする
-    }))
-slack_mention()
