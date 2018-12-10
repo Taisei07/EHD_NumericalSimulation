@@ -71,11 +71,11 @@ H_x = 0.0041#input("H_x(electrode上の点Eのx座標)[m] = ")
 if electrode_number == 4 or electrode_number == 8:
     electrode_pattern = input("electrode_pattern(電極配置のパターン,line or topandbottom) = ")
     if electrode_pattern == "line":
-        L = 0.012
-        I_x = 0.0079#input("I_x(electrode上の点Iのx座標)[m] = ")
-        J_x = 0.0089#input("J_x(electrode上の点Jのx座標)[m] = ")
-        K_x = 0.0091#input("K_x(electrode上の点Kのx座標)[m] = ")
-        L_x = 0.0101#input("L_x(electrode上の点Lのx座標)[m] = ")
+        L = 0.0084
+        I_x = 0.0043#input("I_x(electrode上の点Iのx座標)[m] = ")
+        J_x = 0.0053#input("J_x(electrode上の点Jのx座標)[m] = ")
+        K_x = 0.0055#input("K_x(electrode上の点Kのx座標)[m] = ")
+        L_x = 0.0065#input("L_x(electrode上の点Lのx座標)[m] = ")
 phi_electrodeEF = 0#input("phi_electrodeEF(電極EFの電位)[V] = ")
 phi_electrodeGH = 100#input("phi_electrodeGH(電極GHの電位)[V] = ")
 if electrode_number == 4 or electrode_number == 8:
@@ -221,7 +221,7 @@ def boundary_condition_phi():
                 phi[i][n] = phi_electrodeIJ
                 i += 1
             #ElectrodeKL
-            i = int(G_x / deltax)
+            i = int(G_x / deltax + 1)
             while int(G_x / deltax + 1) <= i <= int(H_x / deltax + 1):
                 phi[i][n] = phi_electrodeKL
                 i += 1
@@ -742,7 +742,7 @@ while t <= T:
     if t == deltaT or int(t/deltaT) % 20 == 0:
         csvout02()
         graph02()
-    if t == deltaT:
+    if t == deltaT or int(t/deltaT) % 50 == 0:
         slack_mention()
         figure_upload("electricalcharge(t=" + str(t) + ").png")
         figure_upload("electricalpotential(t=" + str(t) + ").png")
