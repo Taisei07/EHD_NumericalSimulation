@@ -77,10 +77,10 @@ if electrode_number == 4 or electrode_number == 8:
         K_x = 0.0055#input("K_x(electrode上の点Kのx座標)[m] = ")
         L_x = 0.0065#input("L_x(electrode上の点Lのx座標)[m] = ")
 phi_electrodeEF = 0#input("phi_electrodeEF(電極EFの電位)[V] = ")
-phi_electrodeGH = 100#input("phi_electrodeGH(電極GHの電位)[V] = ")
+phi_electrodeGH = input("phi_electrodeGH(電極GHの電位)[V] = ")
 if electrode_number == 4 or electrode_number == 8:
     phi_electrodeIJ = 0#input("phi_electrodeIJ(電極IJの電位)[V] = ")
-    phi_electrodeKL = 100#input("phi_electrodeKL(電極KLの電位)[V] = ")
+    phi_electrodeKL = input("phi_electrodeKL(電極KLの電位)[V] = ")
 
 
 #物性値、定数の出力
