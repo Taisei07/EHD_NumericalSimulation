@@ -453,6 +453,18 @@ def fig_electrode():
             ax.add_patch(e3)
             e4 = patches.Rectangle(xy=(G_x, H), width=H_x-G_x, height=0.00005, fc='y')
             ax.add_patch(e4)
+
+def graph_enlarge():
+    if electrode_number == 2:
+        plt.xlim(-1.0*L/20 + E_x, H_x + 1.0*L/20)
+        plt.ylim(-1.0*H/20, 1.0*H/4)
+    elif electrode_number == 4:
+        if electrode_pattern == 'line':
+            plt.xlim(-1.0*L/20 + E_x, L_x + 1.0*L/20)
+            plt.ylim(-1.0*H/20, 1.0*H/4)
+        elif electrode_pattern == 'topandbottom':
+            plt.xlim(-1.0*L/20 + E_x, H_x + 1.0*L/20)
+            plt.ylim(-1.0*H/20, 11.0*H/10)
 def graph01():
     #配列変換・設定
     phi_out = phi.transpose()
@@ -478,6 +490,20 @@ def graph01():
     plt.grid()
     fig_electrode()
     plt.savefig("electricalcharge(t=" + str(t) + ").png", dpi=600)
+    plt.cla()
+    plt.clf()
+    plt.close()
+    #電荷密度分布(拡大図)
+    plt.pcolor(X1_out, Y1_out, q_out)
+    plt.colorbar()
+    plt.axis('equal')
+    plt.title('electricalcharge_distribution(t='+str(t)+')')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    graph_enlarge()
+    plt.grid()
+    fig_electrode()
+    plt.savefig("electricalcharge(enlarge, t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
@@ -530,6 +556,22 @@ def graph01():
     plt.cla()
     plt.clf()
     plt.close()
+    #電気的な力Fベクトル(拡大図)
+    plt.pcolor(X1_out, Y1_out, F_out)
+    plt.colorbar()
+    plt.quiver(X2_out, Y2_out, Fx_out, Fy_out, angles='xy', scale_units='xy', scale=np.max(F_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.axis('equal')
+    plt.title('F_vector(t='+str(t)+')')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    graph_enlarge()
+    plt.grid()
+    plt.draw()
+    fig_electrode()
+    plt.savefig("F(enlarge, t=" + str(t) + ").png", dpi=600)
+    plt.cla()
+    plt.clf()
+    plt.close()
     os.chdir('../')
 
 def graph02():
@@ -560,6 +602,28 @@ def graph02():
         plt.savefig("velocity(t=" + str(t) +",m2="+str(m2)+ ").png", dpi=600)
     else:
         plt.savefig("velocity(t=" + str(t) + ").png", dpi=600)
+    plt.cla()
+    plt.clf()
+    plt.close()
+    #速度ベクトル(拡大図)
+    plt.pcolor(X1_out, Y1_out, velocity_out)
+    plt.colorbar()
+    plt.quiver(X2_out, Y2_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.axis('equal')
+    if m2 % 10000 == 0:
+        plt.title('velocity_vector(t='+str(t)+',m2='+str(m2)+')')
+    else:
+        plt.title('velocity_vector(t='+str(t)+')')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    graph_enlarge()
+    plt.grid()
+    plt.draw()
+    fig_electrode()
+    if m2 % 10000 == 0:
+        plt.savefig("velocity(enlarge, t=" + str(t) +",m2="+str(m2)+ ").png", dpi=600)
+    else:
+        plt.savefig("velocity(enlarge, t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
@@ -745,10 +809,13 @@ while t <= T:
     if t == deltaT or int(t/deltaT) % 50 == 0:
         slack_mention()
         figure_upload("electricalcharge(t=" + str(t) + ").png")
+        figure_upload("electricalcharge(enlarge, t=" + str(t) + ").png")
         figure_upload("electricalpotential(t=" + str(t) + ").png")
         figure_upload("electrofield(t=" + str(t) + ").png")
         figure_upload("F(t=" + str(t) + ").png")
+        figure_upload("F(enlarge, t=" + str(t) + ").png")
         figure_upload("velocity(t=" + str(t) + ").png")
+        figure_upload("velocity(enlarge, t=" + str(t) + ").png")
         figure_upload("pressure(t=" + str(t) + ").png")
 
     #時間を進める
@@ -756,8 +823,11 @@ while t <= T:
 print "Calculation ends"
 slack_mention()
 figure_upload("electricalcharge(t=" + str(t) + ").png")
+figure_upload("electricalcharge(enlarge, t=" + str(t) + ").png")
 figure_upload("electricalpotential(t=" + str(t) + ").png")
 figure_upload("electrofield(t=" + str(t) + ").png")
 figure_upload("F(t=" + str(t) + ").png")
+figure_upload("F(enlarge, t=" + str(t) + ").png")
 figure_upload("velocity(t=" + str(t) + ").png")
+figure_upload("velocity(enlarge, t=" + str(t) + ").png")
 figure_upload("pressure(t=" + str(t) + ").png")
