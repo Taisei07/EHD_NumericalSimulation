@@ -261,6 +261,7 @@ def boundary_condition_q():
                 i += 1
 
 #初期におけるDIV
+@jit
 def DIV_calculation():
     for i in range(1, ms):
         for j in range(1, n):
@@ -270,6 +271,7 @@ def DIV_calculation():
         i += 1
 
 #過去の電位phiを更新する
+@jit
 def phi_old_def():
     for i in range(ms+1):
         for j in range(n+1):
@@ -279,6 +281,7 @@ def phi_old_def():
         i += 1
 
 #電場強度Eの計算
+@jit
 def E_calculation():
     for i in range(ms):
         for j in range(n):
@@ -312,10 +315,89 @@ def phi_calculation():
     E_calculation()
 
 #電気的な力Fの計算
+@jit
 def F_calculation():
     for i in range(ms+1):
         for j in range(n+1):
             F[i][j] = np.sqrt(Fx[i][j]**2+Fy[i][j]**2)
+            j += 1
+        j = 1
+        i += 1
+
+#電荷保存則の計算
+@jit
+def q_calculation():
+    for j in range(1, n):
+        for i in range(1, ms):
+            IMOB[i][j] = 1.0 * q[i][j] * ((Ex[i][j]-Ex[i-1][j])/deltax + (Ey[i][j]-Ey[i][j-1])/deltay) + 1.0 * ((Ex[i+1][j]+Ex[i][j])/2*(q[i+1][j]-q[i][j])/2/deltax + (Ey[i][j+1]+Ey[i][j])/2*(q[i][j+1]-q[i][j])/2/deltay)
+            IMOM[i][j] = 1.0 * q[i][j] * ((u_old[i][j] - u_old[i-1][j]) / deltax + 1.0 * (v_old[i][j] - v_old[i][j-1]) / deltay) + 1.0 * (u_old[i][j] + u_old[i-1][j]) / 2 * (q[i+1][j] - q[i-1][j]) / (2*deltax) + 1.0 * (v_old[i][j] + v_old[i][j-1]) / 2 * (q[i][j+1]-q[i][j-1]) / (2*deltay)
+            IDIF[i][j] = 1.0 * (q[i+1][j] - 2 * q[i][j] + q[i-1][j]) / (deltax**2) + 1.0 * (q[i][j+1] - 2 * q[i][j] + q[i][j-1]) / (deltay**2)
+            ICOD[i][j] = 1.0 * ((Ex[i][j]-Ex[i-1][j])/deltax + (Ey[i][j]-Ey[i][j-1])/deltay)
+            i += 1
+        i = 1
+        j += 1
+    for j in range(1, n):
+        for i in range(1, ms):
+            q[i][j] = q[i][j] - deltaT * (K * IMOB[i][j] + IMOM[i][j] - Di * IDIF[i][j] + sigma * ICOD[i][j])
+            i += 1
+        i = 1
+        j += 1
+
+#電気的な力FX,Fyの配列設定
+@jit
+def FxFy_calculation():
+    for i in range(1, ms):
+        for j in range(1, n):
+            Fx[i][j] = - 1.0 * (q[i+1][j]+q[i][j]) / 2.0 * Ex[i][j]
+            Fy[i][j] = - 1.0 * (q[i][j+1]+q[i][j]) / 2.0 * Ey[i][j]
+            j += 1
+        j = 1
+        i += 1
+
+#u_old,v_old仮値設定①粘性項・対流項配列の設定
+@jit
+def temporary_velocity():
+    for i in range(1, ms):
+        for j in range(1, n):
+            CNVU[i][j] = (u_old[i][j] * (u_old[i+1][j]-u_old[i-1][j]) * 1.0 /(2*deltax) - abs(u_old[i][j]) * (u_old[i+1][j]-2*u_old[i][j]+u_old[i-1][j]) * 1.0 / (2*deltax)) - (v_old[i][j]*(u_old[i][j+1] - u_old[i][j-1]) * 1.0 / (2 * deltay) - abs(v_old[i][j])*(u_old[i][j+1]-2*u_old[i][j]+u_old[i][j-1]) * 1.0 / (2 * deltay))
+            CNVV[i][j] = (u_old[i][j] * (v_old[i+1][j]-v_old[i-1][j]) * 1.0 /(2*deltax) - abs(u_old[i][j]) * (v_old[i+1][j]-2*v_old[i][j]+v_old[i-1][j]) * 1.0 / (2*deltax)) - (v_old[i][j]*(v_old[i][j+1] - v_old[i][j-1]) * 1.0 / (2 * deltay) - abs(v_old[i][j])*(v_old[i][j+1]-2*v_old[i][j]+v_old[i][j-1]) * 1.0 / (2 * deltay))
+            DIFU[i][j] = nu * ((u_old[i+1][j]-2*u_old[i][j]+u_old[i-1][j]) * 1.0 / ((deltax)**2) + (u_old[i][j+1]-2*u_old[i][j]+u_old[i][j-1]) * 1.0 / ((deltay)**2))
+            DIFV[i][j] = nu * ((v_old[i+1][j]-2*v_old[i][j]+v_old[i-1][j]) * 1.0 / ((deltax)**2) + (v_old[i][j+1]-2*v_old[i][j]+v_old[i][j-1]) * 1.0 / ((deltay)**2))
+            j += 1
+        j = 1
+        i += 1
+
+#u_old,v_old仮値設定②ナビエストークス方程式を解く
+@jit
+def navie_calculation():
+    for i in range(1, ms-1):
+        for j in range(1, n):
+            u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j] + 1.0 / rho * Fx[i][j])
+            j += 1
+        j = 1
+        i += 1
+    for i in range(1, ms):
+        for j in range(1, n-1):
+            v_old[i][j] = v_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i][j+1]-p_old[i][j])/deltay - CNVV[i][j] + DIFV[i][j] + 1.0 / rho * Fy[i][j])
+            j += 1
+        j = 1
+        i += 1
+
+#速度補正ループ
+@jit
+def velocity_correct():
+    for i in range(1, ms):
+        for j in range(1, n):
+            deltap = - rho * 1.0 / (2*deltaT) * (deltax*deltay) / (deltax**2+deltay**2) * (deltay * (u_old[i][j]-u_old[i-1][j]) + deltax * (v_old[i][j]-v_old[i][j-1]))
+            p_old[i][j] = p_old[i][j] + 1.0 * omega * deltap
+            if i <= ms-2:
+                u_old[i][j] = u_old[i][j] + 1.0 * omega * (1.0/rho) * (deltaT/deltax) * deltap
+            if j <= n-2:
+                v_old[i][j] = v_old[i][j] + 1.0 * omega * (1.0/rho) * (deltaT/deltay) * deltap
+            if 2 <= i:
+                u_old[i-1][j] = u_old[i-1][j] - 1.0 * omega * (1.0/rho) * (deltaT/deltax) * deltap
+            if 2 <= j:
+                v_old[i][j-1] = v_old[i][j-1] - 1.0 * omega * (1.0/rho) * (deltaT/deltay) * deltap
             j += 1
         j = 1
         i += 1
@@ -619,58 +701,14 @@ figure_upload("electrofield(t=" + str(t) + ").png")
 t = deltaT
 for i in xrange(int(T/deltaT)):
     print "t =" + str(t)
-    #電化保存則
-    for j in range(1, n):
-        for i in range(1, ms):
-            IMOB[i][j] = 1.0 * q[i][j] * ((Ex[i][j]-Ex[i-1][j])/deltax + (Ey[i][j]-Ey[i][j-1])/deltay) + 1.0 * ((Ex[i+1][j]+Ex[i][j])/2*(q[i+1][j]-q[i][j])/2/deltax + (Ey[i][j+1]+Ey[i][j])/2*(q[i][j+1]-q[i][j])/2/deltay)
-            IMOM[i][j] = 1.0 * q[i][j] * ((u_old[i][j] - u_old[i-1][j]) / deltax + 1.0 * (v_old[i][j] - v_old[i][j-1]) / deltay) + 1.0 * (u_old[i][j] + u_old[i-1][j]) / 2 * (q[i+1][j] - q[i-1][j]) / (2*deltax) + 1.0 * (v_old[i][j] + v_old[i][j-1]) / 2 * (q[i][j+1]-q[i][j-1]) / (2*deltay)
-            IDIF[i][j] = 1.0 * (q[i+1][j] - 2 * q[i][j] + q[i-1][j]) / (deltax**2) + 1.0 * (q[i][j+1] - 2 * q[i][j] + q[i][j-1]) / (deltay**2)
-            ICOD[i][j] = 1.0 * ((Ex[i][j]-Ex[i-1][j])/deltax + (Ey[i][j]-Ey[i][j-1])/deltay)
-            i += 1
-        i = 1
-        j += 1
-    for j in range(1, n):
-        for i in range(1, ms):
-            q[i][j] = q[i][j] - deltaT * (K * IMOB[i][j] + IMOM[i][j] - Di * IDIF[i][j] + sigma * ICOD[i][j])
-            i += 1
-        i = 1
-        j += 1
+    q_calculation()
     boundary_condition_q()
     phi_calculation()
-    #電気的な力FX,Fyの配列設定
-    for i in range(1, ms):
-        for j in range(1, n):
-            Fx[i][j] = - 1.0 * (q[i+1][j]+q[i][j]) / 2.0 * Ex[i][j]
-            Fy[i][j] = - 1.0 * (q[i][j+1]+q[i][j]) / 2.0 * Ey[i][j]
-            j += 1
-        j = 1
-        i += 1
+    FxFy_calculation()
     csvout01()
     graph01()
-    #u_old,v_old仮値設定①粘性項・対流項配列の設定
-    for i in range(1, ms):
-        for j in range(1, n):
-            CNVU[i][j] = (u_old[i][j] * (u_old[i+1][j]-u_old[i-1][j]) * 1.0 /(2*deltax) - abs(u_old[i][j]) * (u_old[i+1][j]-2*u_old[i][j]+u_old[i-1][j]) * 1.0 / (2*deltax)) - (v_old[i][j]*(u_old[i][j+1] - u_old[i][j-1]) * 1.0 / (2 * deltay) - abs(v_old[i][j])*(u_old[i][j+1]-2*u_old[i][j]+u_old[i][j-1]) * 1.0 / (2 * deltay))
-            CNVV[i][j] = (u_old[i][j] * (v_old[i+1][j]-v_old[i-1][j]) * 1.0 /(2*deltax) - abs(u_old[i][j]) * (v_old[i+1][j]-2*v_old[i][j]+v_old[i-1][j]) * 1.0 / (2*deltax)) - (v_old[i][j]*(v_old[i][j+1] - v_old[i][j-1]) * 1.0 / (2 * deltay) - abs(v_old[i][j])*(v_old[i][j+1]-2*v_old[i][j]+v_old[i][j-1]) * 1.0 / (2 * deltay))
-            DIFU[i][j] = nu * ((u_old[i+1][j]-2*u_old[i][j]+u_old[i-1][j]) * 1.0 / ((deltax)**2) + (u_old[i][j+1]-2*u_old[i][j]+u_old[i][j-1]) * 1.0 / ((deltay)**2))
-            DIFV[i][j] = nu * ((v_old[i+1][j]-2*v_old[i][j]+v_old[i-1][j]) * 1.0 / ((deltax)**2) + (v_old[i][j+1]-2*v_old[i][j]+v_old[i][j-1]) * 1.0 / ((deltay)**2))
-            j += 1
-        j = 1
-        i += 1
-    #u_old,v_old仮値設定②ナビエストークス方程式を解く
-    for i in range(1, ms-1):
-        for j in range(1, n):
-            u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j] + 1.0 / rho * Fx[i][j])
-            j += 1
-        j = 1
-        i += 1
-    for i in range(1, ms):
-        for j in range(1, n-1):
-            v_old[i][j] = v_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i][j+1]-p_old[i][j])/deltay - CNVV[i][j] + DIFV[i][j] + 1.0 / rho * Fy[i][j])
-            j += 1
-        j = 1
-        i += 1
-
+    temporary_velocity()
+    navie_calculation()
 
     #圧力補正ループ
     m2 = 1
@@ -680,25 +718,8 @@ for i in xrange(int(T/deltaT)):
         print str(value[1])
         print "t = " + str(t)
         print "m2 = " + str(m2)
-        for i in range(1, ms):
-            for j in range(1, n):
-                deltap = - rho * 1.0 / (2*deltaT) * (deltax*deltay) / (deltax**2+deltay**2) * (deltay * (u_old[i][j]-u_old[i-1][j]) + deltax * (v_old[i][j]-v_old[i][j-1]))
-                p_old[i][j] = p_old[i][j] + 1.0 * omega * deltap
-                if i <= ms-2:
-                    u_old[i][j] = u_old[i][j] + 1.0 * omega * (1.0/rho) * (deltaT/deltax) * deltap
-                if j <= n-2:
-                    v_old[i][j] = v_old[i][j] + 1.0 * omega * (1.0/rho) * (deltaT/deltay) * deltap
-                if 2 <= i:
-                    u_old[i-1][j] = u_old[i-1][j] - 1.0 * omega * (1.0/rho) * (deltaT/deltax) * deltap
-                if 2 <= j:
-                    v_old[i][j-1] = v_old[i][j-1] - 1.0 * omega * (1.0/rho) * (deltaT/deltay) * deltap
-                j += 1
-            j = 1
-            i += 1
-
+        velocity_correct()
         boundary_condition()
-
-        #連続の式の収束条件
         DIV_calculation()
         #---通常モード---
         Dmax = np.max(DIV)
