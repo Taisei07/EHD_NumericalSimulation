@@ -633,7 +633,7 @@ slack_mention()
 figure_upload("electricalpotential(t=" + str(t) + ").png")
 figure_upload("electrofield(t=" + str(t) + ").png")
 t = deltaT
-for i in range(T/deltaT):
+for i in xrange(int(T/deltaT)):
     print "t =" + str(t)
     #電化保存則
     for j in range(1, n):
