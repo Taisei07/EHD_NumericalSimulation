@@ -566,7 +566,6 @@ def graph02():
     plt.colorbar()
     plt.quiver(X2_out, Y2_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
     plt.axis('equal')
-    if m2 % 10000 == 0:
     plt.title('velocity_vector(t='+str(t)+')')
     plt.xlabel('x')
     plt.ylabel('y')
