@@ -140,25 +140,29 @@ DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 #境界条件の設定
 def boundary_condition():
     #BoundaryAD
-    for j in range(n):
+    j = 0
+    while 0 <= j <= n-1:
         u_old[0][j] = u_old[1][j]
         v_old[0][j] = v_old[1][j]
         p_old[0][j] = p_old[1][j]
         j += 1
     #WallAB
-    for i in range(ms):
+    i = 0
+    while 0 <= i <= ms-1:
         u_old[i][0] = -u_old[i][1]
         v_old[i][0] = 0.0
         p_old[i][0] = p_old[i][1]
         i += 1
     #WallCD
-    for i in range(ms):
+    i = 0
+    while 0 <= i <= ms-1:
         u_old[i][n] = -u_old[i][n-1]
         v_old[i][n-1] = 0.0
         p_old[i][n] = p_old[i][n-1]
         i += 1
     #BoundaryBC
-    for j in range(n):
+    j = 0
+    while 0 <= j <= n-1:
         u_old[ms-1][j] = u_old[ms-2][j]
         v_old[ms][j] = v_old[ms-1][j]
         p_old[ms][j] = p_old[ms-1][j]
@@ -166,71 +170,86 @@ def boundary_condition():
 
 def boundary_condition_phi():
     #BoundaryAD
-    for j in range(n):
+    j = 0
+    while 0 <= j <= n-1:
         phi[0][j] = phi[1][j]
         j += 1
     #WallAB
-    for i in range(ms):
+    i = 0
+    while 0 <= i <= ms-1:
         phi[i][0] = phi[i][1]
         i += 1
     #WallCD
-    for i in range(ms):
+    i = 0
+    while 0 <= i <= ms-1:
         phi[i][n] = phi[i][n-1]
         i += 1
     #BoundaryBC
-    for j in range(n):
+    j = 0
+    while 0 <= j <= n-1:
         phi[ms][j] = phi[ms-1][j]
         j += 1
     #ElectrodeEF
-    for i in range(int(E_x / deltax + 1), int(F_x / deltax + 1)+1):
+    i = int(E_x / deltax + 1)
+    while int(E_x / deltax + 1) <= i <= int(F_x / deltax + 1):
         phi[i][0] = phi_electrodeEF
         i += 1
     #ElectrodeGH
-    for i in range(int(G_x / deltax + 1), int(H_x / deltax + 1)+1):
+    i = int(G_x / deltax + 1)
+    while int(G_x / deltax + 1) <= i <= int(H_x / deltax + 1):
         phi[i][0] = phi_electrodeGH
         i += 1
 
     if electrode_number == 4 or electrode_number == 8:
         if electrode_pattern == "line":
             #ElectrodeIJ
-            for i in range(int(I_x / deltax + 1), int(J_x / deltax + 1)+1):
+            i = int(I_x / deltax + 1)
+            while int(I_x / deltax + 1) <= i <= int(J_x / deltax + 1):
                 phi[i][0] = phi_electrodeIJ
                 i += 1
             #ElectrodeKL
-            for i in range(int(K_x / deltax + 1), int(L_x / deltax + 1)+1):
+            i = int(K_x / deltax + 1)
+            while int(K_x / deltax + 1) <= i <= int(L_x / deltax + 1):
                 phi[i][0] = phi_electrodeKL
                 i += 1
         elif electrode_pattern == "topandbottom":
             #ElectrodeIJ
-            for i in range(int(E_x / deltax + 1), int(F_x / deltax + 1)+1):
+            i = int(E_x / deltax + 1)
+            while int(E_x / deltax + 1) <= i <= int(F_x / deltax + 1):
                 phi[i][n] = phi_electrodeIJ
                 i += 1
             #ElectrodeKL
-            for i in range(int(G_x / deltax + 1), int(H_x / deltax + 1)+1):
+            i = int(G_x / deltax + 1)
+            while int(G_x / deltax + 1) <= i <= int(H_x / deltax + 1):
                 phi[i][n] = phi_electrodeKL
                 i += 1
 
 def boundary_condition_electrode(A,B):
-    for i in range(int(A / deltax + 1), int(B / deltax + 1)+1):
+    i = int(A / deltax + 1)
+    while int(A / deltax + 1) <= i <= int(B / deltax + 1):
         q[i][1] = - epsilon * (phi[i][2]-phi[i][1]) / (deltay**2)
         q[i][0] = 0
         i += 1
 
 def boundary_condition_q():
     #BoundaryAD
-    for j in range(n):
+    j = 0
+    while 0 <= j <= n-1:
         q[0][j] = q[0][j]
         j += 1
     #WallAB
-    for i in range(ms):
+    i = 0
+    while 0 <= i <= ms-1:
         q[i][0] = q[i][1]
         i += 1
     #WallCD
-    for i in range(ms):
+    i = 0
+    while 0 <= i <= ms-1:
         q[i][n] = q[i][n-1]
         i += 1
     #BoundaryBC
-    for j in range(n):
+    j = 0
+    while 0 <= j <= n-1:
         q[ms][j] = q[ms-1][j]
         j += 1
     #ElectrodeEF
@@ -246,20 +265,24 @@ def boundary_condition_q():
             boundary_condition_electrode(K_x,L_x)
         elif electrode_pattern == "topandbottom":
             #ElectrodeIJ
-            for i in range(int(E_x / deltax + 1), int(F_x / deltax + 1)+1):
+            i = int(E_x / deltax + 1)
+            while int(E_x / deltax + 1) <= i <= int(F_x / deltax + 1):
                 q[i][n-1] = - epsilon * (phi[i][n-2]-phi[i][n-1]) / (deltay**2)
                 q[i][n] = 0
                 i += 1
             #ElectrodeKL
-            for i in range(int(G_x / deltax + 1), int(H_x / deltax + 1)+1):
+            i = int(G_x / deltax + 1)
+            while int(G_x / deltax + 1) <= i <= int(H_x / deltax + 1):
                 q[i][n-1] = - epsilon * (phi[i][n-2]-phi[i][n-1]) / (deltay**2)
                 q[i][n] = 0
                 i += 1
 
 #初期におけるDIV
 def DIV_calculation():
-    for i in range(1, ms):
-        for j in range(1, n):
+    i = 1
+    j = 1
+    while 1 <= i <= ms-1:
+        while 1 <= j <= n-1:
             DIV[i][j] = abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay)
             j += 1
         j = 1
@@ -267,8 +290,10 @@ def DIV_calculation():
 
 #過去の電位phiを更新する
 def phi_old_def():
-    for i in range(ms+1):
-        for j in range(n+1):
+    i = 0
+    j = 0
+    while 0 <= i <= ms:
+        while 0 <= j <= n:
             phi_old[i][j] = phi[i][j]
             j += 1
         j = 0
@@ -276,8 +301,10 @@ def phi_old_def():
 
 #電場強度Eの計算
 def E_calculation():
-    for i in range(ms):
-        for j in range(n):
+    i = 0
+    j = 0
+    while 0 <= i <= ms-1:
+        while 0 <= j <= n-1:
             Ex[i][j] = -(phi[i+1][j]-phi[i][j])/deltax
             Ey[i][j] = -(phi[i][j+1]-phi[i][j])/deltay
             E[i][j] = np.sqrt(Ex[i][j]**2+Ey[i][j]**2)
@@ -294,8 +321,10 @@ def phi_calculation():
         print "t = " + str(t)
         print "m1 = " + str(m1)
         phi_old_def()
-        for j in range(1, n):
-            for i in range(1, ms):
+        i = 1
+        j = 1
+        while 1 <= j <= n-1:
+            while 1 <= i <= ms-1:
                 phi[i][j] = 1.0 * (deltax * deltay)**2 / (2 * ((deltax**2)+(deltay**2))) * (1.0 * q[i][j] / epsilon + (phi[i+1][j]+phi[i-1][j])/(deltax**2) + (phi[i][j+1]+phi[i][j-1])/(deltay**2))
                 i += 1
             i = 1
@@ -308,8 +337,10 @@ def phi_calculation():
 
 #電気的な力Fの計算
 def F_calculation():
-    for i in range(ms+1):
-        for j in range(n+1):
+    i = 0
+    j = 0
+    while 0 <= i <= ms:
+        while 0 <= j <= n:
             F[i][j] = np.sqrt(Fx[i][j]**2+Fy[i][j]**2)
             j += 1
         j = 1
@@ -360,15 +391,19 @@ def csvout02():
 #グラフを作成して保存する
 #分布図用座標
 X1 = np.array([[0.0] * (n+1) for i in range(ms+1)])
-for j in range(n+1):
-    for i in range(ms+1):
+i = 0
+j = 0
+while 0 <= j <= n:
+    while 0 <= i <= ms:
         X1[i][j] = deltax * (i-0.5)
         i += 1
     i = 0
     j += 1
 Y1 = np.array([[0.0] * (n+1) for i in range(ms+1)])
-for j in range(n+1):
-    for i in range(ms+1):
+i = 0
+j = 0
+while 0 <= j <= n:
+    while 0 <= i <= ms:
         Y1[i][j] = deltay * (j-0.5)
         i += 1
     i = 0
@@ -377,15 +412,19 @@ X1_out = X1.transpose()
 Y1_out = Y1.transpose()
 #ベクトル用座標
 X2 = np.array([[0.0] * (n+1) for i in range(ms+1)])
-for j in range(n+1):
-    for i in range(ms+1):
+i = 0
+j = 0
+while 0 <= j <= n:
+    while 0 <= i <= ms:
         X2[i][j] = deltax * i
         i += 1
     i = 0
     j += 1
 Y2 = np.array([[0.0] * (n+1) for i in range(ms+1)])
-for j in range(n+1):
-    for i in range(ms+1):
+i = 0
+j = 0
+while 0 <= j <= n:
+    while 0 <= i <= ms:
         Y2[i][j] = deltay * j
         i += 1
     i = 0
@@ -630,11 +669,13 @@ slack_mention()
 figure_upload("electricalpotential(t=" + str(t) + ").png")
 figure_upload("electrofield(t=" + str(t) + ").png")
 t = deltaT
-for i in range(T/deltaT):
+while t <= T:
     print "t =" + str(t)
     #電化保存則
-    for j in range(1, n):
-        for i in range(1, ms):
+    i = 1
+    j = 1
+    while 1 <= j <= n-1:
+        while 1 <= i <= ms-1:
             IMOB[i][j] = 1.0 * q[i][j] * ((Ex[i][j]-Ex[i-1][j])/deltax + (Ey[i][j]-Ey[i][j-1])/deltay) + 1.0 * ((Ex[i+1][j]+Ex[i][j])/2*(q[i+1][j]-q[i][j])/2/deltax + (Ey[i][j+1]+Ey[i][j])/2*(q[i][j+1]-q[i][j])/2/deltay)
             IMOM[i][j] = 1.0 * q[i][j] * ((u_old[i][j] - u_old[i-1][j]) / deltax + 1.0 * (v_old[i][j] - v_old[i][j-1]) / deltay) + 1.0 * (u_old[i][j] + u_old[i-1][j]) / 2 * (q[i+1][j] - q[i-1][j]) / (2*deltax) + 1.0 * (v_old[i][j] + v_old[i][j-1]) / 2 * (q[i][j+1]-q[i][j-1]) / (2*deltay)
             IDIF[i][j] = 1.0 * (q[i+1][j] - 2 * q[i][j] + q[i-1][j]) / (deltax**2) + 1.0 * (q[i][j+1] - 2 * q[i][j] + q[i][j-1]) / (deltay**2)
@@ -642,8 +683,10 @@ for i in range(T/deltaT):
             i += 1
         i = 1
         j += 1
-    for j in range(1, n):
-        for i in range(1, ms):
+    i = 1
+    j = 1
+    while 1 <= j <= n-1:
+        while 1 <= i <= ms-1:
             q[i][j] = q[i][j] - deltaT * (K * IMOB[i][j] + IMOM[i][j] - Di * IDIF[i][j] + sigma * ICOD[i][j])
             i += 1
         i = 1
@@ -651,8 +694,10 @@ for i in range(T/deltaT):
     boundary_condition_q()
     phi_calculation()
     #電気的な力FX,Fyの配列設定
-    for i in range(1, ms):
-        for j in range(1, n):
+    i = 1
+    j = 1
+    while 1 <= i <= ms-1:
+        while 1 <= j <= n-1:
             Fx[i][j] = - 1.0 * (q[i+1][j]+q[i][j]) / 2.0 * Ex[i][j]
             Fy[i][j] = - 1.0 * (q[i][j+1]+q[i][j]) / 2.0 * Ey[i][j]
             j += 1
@@ -661,8 +706,10 @@ for i in range(T/deltaT):
     csvout01()
     graph01()
     #u_old,v_old仮値設定①粘性項・対流項配列の設定
-    for i in range(1, ms):
-        for j in range(1, n):
+    i = 1
+    j = 1
+    while 1 <= i <= ms-1:
+        while 1 <= j <= n-1:
             CNVU[i][j] = (u_old[i][j] * (u_old[i+1][j]-u_old[i-1][j]) * 1.0 /(2*deltax) - abs(u_old[i][j]) * (u_old[i+1][j]-2*u_old[i][j]+u_old[i-1][j]) * 1.0 / (2*deltax)) - (v_old[i][j]*(u_old[i][j+1] - u_old[i][j-1]) * 1.0 / (2 * deltay) - abs(v_old[i][j])*(u_old[i][j+1]-2*u_old[i][j]+u_old[i][j-1]) * 1.0 / (2 * deltay))
             CNVV[i][j] = (u_old[i][j] * (v_old[i+1][j]-v_old[i-1][j]) * 1.0 /(2*deltax) - abs(u_old[i][j]) * (v_old[i+1][j]-2*v_old[i][j]+v_old[i-1][j]) * 1.0 / (2*deltax)) - (v_old[i][j]*(v_old[i][j+1] - v_old[i][j-1]) * 1.0 / (2 * deltay) - abs(v_old[i][j])*(v_old[i][j+1]-2*v_old[i][j]+v_old[i][j-1]) * 1.0 / (2 * deltay))
             DIFU[i][j] = nu * ((u_old[i+1][j]-2*u_old[i][j]+u_old[i-1][j]) * 1.0 / ((deltax)**2) + (u_old[i][j+1]-2*u_old[i][j]+u_old[i][j-1]) * 1.0 / ((deltay)**2))
@@ -671,14 +718,18 @@ for i in range(T/deltaT):
         j = 1
         i += 1
     #u_old,v_old仮値設定②ナビエストークス方程式を解く
-    for i in range(1, ms-1):
-        for j in range(1, n):
+    i = 1
+    j = 1
+    while 1 <= i <= ms-2:
+        while 1 <= j <= n-1:
             u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j] + 1.0 / rho * Fx[i][j])
             j += 1
         j = 1
         i += 1
-    for i in range(1, ms):
-        for j in range(1, n-1):
+    i = 1
+    j = 1
+    while 1 <= i <= ms-1 :
+        while 1 <= j <= n-2:
             v_old[i][j] = v_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i][j+1]-p_old[i][j])/deltay - CNVV[i][j] + DIFV[i][j] + 1.0 / rho * Fy[i][j])
             j += 1
         j = 1
@@ -693,8 +744,10 @@ for i in range(T/deltaT):
         print str(value[1])
         print "t = " + str(t)
         print "m2 = " + str(m2)
-        for i in range(1, ms):
-            for j in range(1, n):
+        i = 1
+        j = 1
+        while 1 <= i <= ms-1:
+            while 1 <= j <= n-1:
                 deltap = - rho * 1.0 / (2*deltaT) * (deltax*deltay) / (deltax**2+deltay**2) * (deltay * (u_old[i][j]-u_old[i-1][j]) + deltax * (v_old[i][j]-v_old[i][j-1]))
                 p_old[i][j] = p_old[i][j] + 1.0 * omega * deltap
                 if i <= ms-2:
