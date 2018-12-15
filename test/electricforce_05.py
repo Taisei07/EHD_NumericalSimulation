@@ -14,6 +14,9 @@ os.chdir('/media/pascal/HD-GDU3/Tajima_backup/EHD/result')
 os.mkdir(str(value[1]))
 import time
 start_time = time.time()
+def time_count():
+    process_time = time.time() - start_time
+    print "process_time = " + str(process_time)
 import requests
 
 #slack通知
@@ -294,8 +297,8 @@ def phi_calculation():
         print "t = " + str(t)
         print "m1 = " + str(m1)
         phi_old_def()
-        for j in range(1, n):
-            for i in range(1, ms):
+        for j in xrange(1, n):
+            for i in xrange(1, ms):
                 phi[i][j] = 1.0 * (deltax * deltay)**2 / (2 * ((deltax**2)+(deltay**2))) * (1.0 * q[i][j] / epsilon + (phi[i+1][j]+phi[i-1][j])/(deltax**2) + (phi[i][j+1]+phi[i][j-1])/(deltay**2))
                 i += 1
             i = 1
@@ -740,8 +743,7 @@ for i in range(T/deltaT):
         #---↑---
         print "Dmax = " + str(Dmax)
         print "deltap = " + str(deltap)
-        process_time = time.time() - start_time
-        print "process_time = " + str(process_time)
+        time_count()
         if m2 % 10000 == 0:
             csvout02()
             graph02()
