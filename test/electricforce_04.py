@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-os.chdir('../../')
-from slackAPI import slackAPI
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -9,6 +7,8 @@ import matplotlib.patches as patches
 import json
 import requests
 import os
+os.chdir('../../')
+from slackAPI import slackAPI
 import csv
 import sys
 value = sys.argv
