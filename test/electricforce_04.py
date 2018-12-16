@@ -8,7 +8,7 @@ import json
 import requests
 import os
 os.chdir('../../')
-import slackAPI
+from mymodule import slackAPI
 slackAPI()
 import csv
 import sys
