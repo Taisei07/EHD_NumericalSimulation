@@ -8,6 +8,7 @@ import json
 import requests
 import os
 import sys
+#githubのないところからtokenを取得する
 sys.path.append("../../")
 import slackAPI
 slackAPI.slackAPI()
