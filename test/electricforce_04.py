@@ -8,8 +8,9 @@ import json
 import requests
 import os
 import sys
-os.chdir('/home/pascal/Tajima2018/EHD')
+sys.path.append("../../")
 import slackAPI
+slackAPI.slackAPI()
 import csv
 value = sys.argv
 os.chdir('/media/pascal/HD-GDU3/Tajima_backup/EHD/result')
