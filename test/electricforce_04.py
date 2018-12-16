@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+os.chdir('../../')
+from slackAPI import slackAPI
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -28,7 +30,6 @@ def slack_mention():
 
 def figure_upload(A):
     os.chdir(str(value[1]))
-    TOKEN = 'xoxp-335429545841-335251755968-506134747223-04983738f49b7e8a8f12c4bf151c2461'
     CHANNEL = 'CELQHE10X'
     files = {'file': open(A, 'rb')}
     param = {
