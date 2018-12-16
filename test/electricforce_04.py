@@ -28,7 +28,7 @@ def slack_mention():
 
 def figure_upload(A):
     os.chdir(str(value[1]))
-    TOKEN = 'xoxb-335429545841-497705575700-mYE1iTJjnFu05W2Cs1nLISav'
+    TOKEN = 'xoxp-335429545841-335251755968-506134747223-04983738f49b7e8a8f12c4bf151c2461'
     CHANNEL = 'CELQHE10X'
     files = {'file': open(A, 'rb')}
     param = {
