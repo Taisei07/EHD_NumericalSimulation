@@ -8,10 +8,8 @@ import json
 import requests
 import os
 import sys
-#githubのないところからtokenを取得する
-sys.path.append("../../")
-import slackAPI
-slackAPI.slackAPI()
+sys.path.append('../../')
+from module.slackAPI import TOKEN
 import csv
 value = sys.argv
 os.chdir('/media/pascal/HD-GDU3/Tajima_backup/EHD/result')
@@ -55,9 +53,9 @@ sigma = 0.000000001#input("sigma(導電率)[A/Vm] = ")
 
 #定数
 print "定数入力"
-H = 0.002#input("H(流れ場y方向長さ)[m] = ")
-L = 0.006#input("L(流れ場x方向長さ)[m] = ")
-T = input("T(移流時間)[s] = ")
+H = 0.001#0.002#input("H(流れ場y方向長さ)[m] = ")
+L = 0.003#0.006#input("L(流れ場x方向長さ)[m] = ")
+T = 0.5#input("T(移流時間)[s] = ")
 deltaT = 0.00001#input("deltaT(時間刻み)[s] = ")
 deltax = input("deltax(x方向要素間距離)[m] = ")
 deltay = input("deltay(y方向要素間距離)[m] = ")
@@ -65,18 +63,18 @@ omega = 0.5#input("omega(緩和係数) = ")
 M1 = 0.000001#input("M1(連続の式収束条件) = ")
 M2 = 0.00000001#input("M2(電位phiの収束条件) = ")
 electrode_number = input("electrode_number(電極の数,2or4or8)[個] = ")
-E_x = 0.0019#input("E_x(electrode上の点Eのx座標)[m] = ")
-F_x = 0.0029#input("F_x(electrode上の点Cのx座標)[m] = ")
-G_x = 0.0031#input("G_x(electrode上の点Dのx座標)[m] = ")
-H_x = 0.0041#input("H_x(electrode上の点Eのx座標)[m] = ")
+E_x = 0.0004#0.0019#input("E_x(electrode上の点Eのx座標)[m] = ")
+F_x = 0.0014#0.0029#input("F_x(electrode上の点Cのx座標)[m] = ")
+G_x = 0.0016#0.0031#input("G_x(electrode上の点Dのx座標)[m] = ")
+H_x = 0.0026#0.0041#input("H_x(electrode上の点Eのx座標)[m] = ")
 if electrode_number == 4 or electrode_number == 8:
     electrode_pattern = input("electrode_pattern(電極配置のパターン,line or topandbottom) = ")
     if electrode_pattern == "line":
-        L = 0.0084
-        I_x = 0.0043#input("I_x(electrode上の点Iのx座標)[m] = ")
-        J_x = 0.0053#input("J_x(electrode上の点Jのx座標)[m] = ")
-        K_x = 0.0055#input("K_x(electrode上の点Kのx座標)[m] = ")
-        L_x = 0.0065#input("L_x(electrode上の点Lのx座標)[m] = ")
+        L = 0.0054
+        I_x = 0.0028#0.0043#input("I_x(electrode上の点Iのx座標)[m] = ")
+        J_x = 0.0038#0.0053#input("J_x(electrode上の点Jのx座標)[m] = ")
+        K_x = 0.0040#0.0055#input("K_x(electrode上の点Kのx座標)[m] = ")
+        L_x = 0.0050#0.0065#input("L_x(electrode上の点Lのx座標)[m] = ")
 phi_electrodeEF = 0#input("phi_electrodeEF(電極EFの電位)[V] = ")
 phi_electrodeGH = input("phi_electrodeGH(電極GHの電位)[V] = ")
 if electrode_number == 4 or electrode_number == 8:
@@ -419,7 +417,7 @@ i = 0
 j = 0
 while 0 <= j <= n:
     while 0 <= i <= ms:
-        X2[i][j] = deltax * i
+        X2[i][j] = deltax * (i-0.5)
         i += 1
     i = 0
     j += 1
@@ -428,7 +426,7 @@ i = 0
 j = 0
 while 0 <= j <= n:
     while 0 <= i <= ms:
-        Y2[i][j] = deltay * j
+        Y2[i][j] = deltay * (j-0.5)
         i += 1
     i = 0
     j += 1
@@ -437,22 +435,22 @@ Y2_out = Y2.transpose()
 
 def fig_electrode():
     ax = plt.axes()
-    e1 = patches.Rectangle(xy=(E_x, -0.00005), width=F_x-E_x, height=0.00005, fc='y')
+    e1 = patches.Rectangle(xy=(E_x, -0.00005), width=F_x-E_x, height=0.00005, ec='y', fill=False)
     ax.add_patch(e1)
-    e2 = patches.Rectangle(xy=(G_x, -0.00005), width=H_x-G_x, height=0.00005, fc='y')
+    e2 = patches.Rectangle(xy=(G_x, -0.00005), width=H_x-G_x, height=0.00005, ec='y', fill=False)
     ax.add_patch(e2)
     r = patches.Rectangle(xy=(0, 0), width=L, height=H, ec='#000000', fill=False)
     ax.add_patch(r)
     if electrode_number == 4 or electrode_number == 8:
         if electrode_pattern == "line":
-            e3 = patches.Rectangle(xy=(I_x, -0.00005), width=J_x-I_x, height=0.00005, fc='y')
+            e3 = patches.Rectangle(xy=(I_x, -0.00005), width=J_x-I_x, height=0.00005, ec='y', fill=False)
             ax.add_patch(e3)
-            e4 = patches.Rectangle(xy=(K_x, -0.00005), width=L_x-K_x, height=0.00005, fc='y')
+            e4 = patches.Rectangle(xy=(K_x, -0.00005), width=L_x-K_x, height=0.00005, ec='y', fill=False)
             ax.add_patch(e4)
         elif electrode_pattern == "topandbottom":
-            e3 = patches.Rectangle(xy=(E_x, H), width=F_x-E_x, height=0.00005, fc='y')
+            e3 = patches.Rectangle(xy=(E_x, H), width=F_x-E_x, height=0.00005, ec='y', fill=False)
             ax.add_patch(e3)
-            e4 = patches.Rectangle(xy=(G_x, H), width=H_x-G_x, height=0.00005, fc='y')
+            e4 = patches.Rectangle(xy=(G_x, H), width=H_x-G_x, height=0.00005, ec='y', fill=False)
             ax.add_patch(e4)
 
 def graph_enlarge():
@@ -480,7 +478,7 @@ def graph01():
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #電荷密度分布作成
-    plt.pcolor(X1_out, Y1_out, q_out)
+    plt.contourf(X1_out, Y1_out, q_out)
     plt.colorbar()
     plt.axis('equal')
     plt.title('electricalcharge_distribution(t='+str(t)+')')
@@ -495,7 +493,7 @@ def graph01():
     plt.clf()
     plt.close()
     #電荷密度分布(拡大図)
-    plt.pcolor(X1_out, Y1_out, q_out)
+    plt.contourf(X1_out, Y1_out, q_out)
     plt.colorbar()
     plt.axis('equal')
     plt.title('electricalcharge_distribution(t='+str(t)+')')
@@ -509,7 +507,7 @@ def graph01():
     plt.clf()
     plt.close()
     #電位分布作成
-    plt.pcolor(X1_out, Y1_out, phi_out)
+    plt.contourf(X1_out, Y1_out, phi_out)
     plt.colorbar()
     plt.axis('equal')
     plt.title('electricalpotential_distribution(t='+str(t)+')')
@@ -524,9 +522,9 @@ def graph01():
     plt.clf()
     plt.close()
     #電場強度ベクトル作成
-    plt.pcolor(X1_out, Y1_out, E_out)
-    plt.colorbar()
-    plt.quiver(X2_out, Y2_out, Ex_out, Ey_out, angles='xy', scale_units='xy', scale=np.max(E_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.quiver(X2_out, Y2_out, Ex_out, Ey_out, angles='xy', scale_units='xy', scale=np.max(E_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(5.0/6*L, -1.0/5*H, np.max(E_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(E_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.text(5.0/6*L, -2.0/5*H, str('{:.2e}'.format(np.max(E_out))) + '[V/m]')
     plt.axis('equal')
     plt.title('electrofield_vector(t='+str(t)+')')
     plt.xlabel('x')
@@ -540,10 +538,26 @@ def graph01():
     plt.cla()
     plt.clf()
     plt.close()
+    #電場強度ベクトル作成(拡大図)
+    plt.quiver(X2_out, Y2_out, Ex_out, Ey_out, angles='xy', scale_units='xy', scale=np.max(E_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(3.5/6*L, -1.0/5*H, np.max(E_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(E_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.text(3.5/6*L, -2.0/5*H, str('{:.2e}'.format(np.max(E_out))) + '[V/m]')
+    plt.axis('equal')
+    plt.title('electrofield_vector(t='+str(t)+')')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    graph_enlarge()
+    plt.grid()
+    plt.draw()
+    fig_electrode()
+    plt.savefig("electrofield(enlarge, t=" + str(t) + ").png", dpi=600)
+    plt.cla()
+    plt.clf()
+    plt.close()
     #電気的な力Fベクトル作成
-    plt.pcolor(X1_out, Y1_out, F_out)
-    plt.colorbar()
-    plt.quiver(X2_out, Y2_out, Fx_out, Fy_out, angles='xy', scale_units='xy', scale=np.max(F_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.quiver(X2_out, Y2_out, Fx_out, Fy_out, angles='xy', scale_units='xy', scale=np.max(F_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(5.0/6*L, -1.0/5*H, np.max(F_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(F_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.text(5.0/6*L, -2.0/5*H, str('{:.2e}'.format(np.max(F_out))) + '[m/s^2]')
     plt.axis('equal')
     plt.title('F_vector(t='+str(t)+')')
     plt.xlabel('x')
@@ -558,9 +572,9 @@ def graph01():
     plt.clf()
     plt.close()
     #電気的な力Fベクトル(拡大図)
-    plt.pcolor(X1_out, Y1_out, F_out)
-    plt.colorbar()
-    plt.quiver(X2_out, Y2_out, Fx_out, Fy_out, angles='xy', scale_units='xy', scale=np.max(F_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.quiver(X2_out, Y2_out, Fx_out, Fy_out, angles='xy', scale_units='xy', scale=np.max(F_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(3.5/6*L, -1.0/5*H, np.max(F_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(F_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.text(3.5/6*L, -2.0/5*H, str('{:.2E}'.format(np.max(F_out))) + '[m/s^2]')
     plt.axis('equal')
     plt.title('F_vector(t='+str(t)+')')
     plt.xlabel('x')
@@ -584,9 +598,9 @@ def graph02():
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
-    plt.pcolor(X1_out, Y1_out, velocity_out)
-    plt.colorbar()
-    plt.quiver(X2_out, Y2_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.quiver(X2_out, Y2_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(5.0/6*L, -1.0/5*H, np.max(velocity_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.text(5.0/6*L, -2.0/5*H, str('{:.2E}'.format(np.max(velocity_out))) + '[m/s]')
     plt.axis('equal')
     if m2 % 10000 == 0:
         plt.title('velocity_vector(t='+str(t)+',m2='+str(m2)+')')
@@ -604,9 +618,9 @@ def graph02():
     plt.clf()
     plt.close()
     #速度ベクトル(拡大図)
-    plt.pcolor(X1_out, Y1_out, velocity_out)
-    plt.colorbar()
-    plt.quiver(X2_out, Y2_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.quiver(X2_out, Y2_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(3.5/6*L, -1.0/5*H, np.max(velocity_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.text(3.5/6*L, -2.0/5*H, str('{:.2E}'.format(np.max(velocity_out))) + '[m/s]')
     plt.axis('equal')
     plt.title('velocity_vector(t='+str(t)+')')
     plt.xlabel('x')
@@ -620,7 +634,7 @@ def graph02():
     plt.clf()
     plt.close()
     #圧力分布作成
-    plt.pcolor(X1_out, Y1_out, p_out)
+    plt.contourf(X1_out, Y1_out, p_out)
     plt.colorbar()
     plt.axis('equal')
     plt.title('pressure_distribution(t='+str(t)+')')
@@ -656,6 +670,7 @@ graph02()
 slack_mention()
 figure_upload("electricalpotential(t=" + str(t) + ").png")
 figure_upload("electrofield(t=" + str(t) + ").png")
+figure_upload("electrofield(enlarge, t=" + str(t) + ").png")
 t = deltaT
 while t <= T:
     print "t =" + str(t)
@@ -795,6 +810,7 @@ while t <= T:
         figure_upload("electricalcharge(enlarge, t=" + str(t) + ").png")
         figure_upload("electricalpotential(t=" + str(t) + ").png")
         figure_upload("electrofield(t=" + str(t) + ").png")
+        figure_upload("electrofield(enlarge, t=" + str(t) + ").png")
         figure_upload("F(t=" + str(t) + ").png")
         figure_upload("F(enlarge, t=" + str(t) + ").png")
         figure_upload("velocity(t=" + str(t) + ").png")
@@ -809,6 +825,7 @@ figure_upload("electricalcharge(t=" + str(t) + ").png")
 figure_upload("electricalcharge(enlarge, t=" + str(t) + ").png")
 figure_upload("electricalpotential(t=" + str(t) + ").png")
 figure_upload("electrofield(t=" + str(t) + ").png")
+figure_upload("electrofield(enlarge, t=" + str(t) + ").png")
 figure_upload("F(t=" + str(t) + ").png")
 figure_upload("F(enlarge, t=" + str(t) + ").png")
 figure_upload("velocity(t=" + str(t) + ").png")
