@@ -187,7 +187,7 @@ def boundary_condition_phi():
         i += 1
     #BoundaryBC
     j = 0
-    while 0 <= j <= n-1:
+    while 0 <= j <= n:
         phi[ms][j] = phi[ms-1][j]
         j += 1
     #ElectrodeEF
