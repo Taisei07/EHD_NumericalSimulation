@@ -804,7 +804,7 @@ while t <= T:
     if t == deltaT or int(t/deltaT) % 20 == 0:
         csvout02()
         graph02()
-    if t == deltaT or int(t/deltaT) % 20 == 0:
+    if t == deltaT or int(t/deltaT) % 100 == 0:
         slack_mention()
         figure_upload("electricalcharge(t=" + str(t) + ").png")
         figure_upload("electricalcharge(enlarge, t=" + str(t) + ").png")
