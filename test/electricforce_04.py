@@ -56,7 +56,7 @@ print "定数入力"
 H = 0.001#0.002#input("H(流れ場y方向長さ)[m] = ")
 L = 0.003#0.006#input("L(流れ場x方向長さ)[m] = ")
 T = 0.5#input("T(移流時間)[s] = ")
-deltaT = 0.00001#input("deltaT(時間刻み)[s] = ")
+deltaT = input("deltaT(時間刻み)[s] = ")
 deltax = input("deltax(x方向要素間距離)[m] = ")
 deltay = input("deltay(y方向要素間距離)[m] = ")
 omega = 0.5#input("omega(緩和係数) = ")
@@ -478,7 +478,10 @@ def graph01():
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #電荷密度分布作成
-    plt.contourf(X1_out, Y1_out, q_out)
+    if t == 0:
+        plt.contourf(X1_out, Y1_out, q_out)
+    else:
+        plt.contourf(X1_out, Y1_out, q_out, levels=[np.min(q) + x*1.0/20*(np.max(q)-np.min(q)) for x in range(21)])
     plt.colorbar()
     plt.axis('equal')
     plt.title('electricalcharge_distribution(t='+str(t)+')')
@@ -493,7 +496,10 @@ def graph01():
     plt.clf()
     plt.close()
     #電荷密度分布(拡大図)
-    plt.contourf(X1_out, Y1_out, q_out)
+    if t == 0:
+        plt.contourf(X1_out, Y1_out, q_out)
+    else:
+        plt.contourf(X1_out, Y1_out, q_out, levels=[np.min(q) + x*1.0/20*(np.max(q)-np.min(q)) for x in range(21)])
     plt.colorbar()
     plt.axis('equal')
     plt.title('electricalcharge_distribution(t='+str(t)+')')
@@ -507,7 +513,7 @@ def graph01():
     plt.clf()
     plt.close()
     #電位分布作成
-    plt.contourf(X1_out, Y1_out, phi_out)
+    plt.contourf(X1_out, Y1_out, phi_out, levels=[np.min(phi) + x*1.0/20*(np.max(phi)-np.min(phi)) for x in range(21)])
     plt.colorbar()
     plt.axis('equal')
     plt.title('electricalpotential_distribution(t='+str(t)+')')
@@ -634,7 +640,10 @@ def graph02():
     plt.clf()
     plt.close()
     #圧力分布作成
-    plt.contourf(X1_out, Y1_out, p_out)
+    if t == 0:
+        plt.contourf(X1_out, Y1_out, p_out)
+    else:
+        plt.contourf(X1_out, Y1_out, p_out, levels=[np.min(p_old) + x*1.0/20*(np.max(p_old)-np.min(p_old)) for x in range(21)])
     plt.colorbar()
     plt.axis('equal')
     plt.title('pressure_distribution(t='+str(t)+')')
@@ -706,8 +715,9 @@ while t <= T:
             j += 1
         j = 1
         i += 1
-    csvout01()
-    graph01()
+    if t == deltaT or int(t/deltaT) % 100 == 0:
+        csvout01()
+        graph01()
     #u_old,v_old仮値設定①粘性項・対流項配列の設定
     i = 1
     j = 1

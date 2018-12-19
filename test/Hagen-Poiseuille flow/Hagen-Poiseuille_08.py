@@ -3,39 +3,63 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from numpy.random import *
-from matplotlib import animation
 import matplotlib.patches as patches
+import json
+import requests
 import os
-import csv
 import sys
+sys.path.append('../../../')
+from module.slackAPI import TOKEN
+import csv
 value = sys.argv
 os.chdir('/media/pascal/HD-GDU3/Tajima_backup/EHD/result')
 os.mkdir(str(value[1]))
 import time
 start_time = time.time()
+import requests
+
+#slack通知
+def slack_mention():
+    process_time = time.time() - start_time
+    requests.post('https://hooks.slack.com/services/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', data = json.dumps({
+        'text': str(value[1]) + '\n' + 'process_time : ' + str(process_time), # 投稿するテキスト
+        'username': u'ghost', # 投稿のユーザー名
+        'icon_emoji': u':ghost:', # 投稿のプロフィール画像に入れる絵文字
+        'link_names': 1, # メンションを有効にする
+    }))
+
+def figure_upload(A):
+    os.chdir(str(value[1]))
+    CHANNEL = 'CELQHE10X'
+    files = {'file': open(A, 'rb')}
+    param = {
+    'token':TOKEN,
+    'channels':CHANNEL,
+    'filename':A,
+    'initial_comment': str(value[1]) + '_' + A,
+    'title': A
+    }
+    requests.post(url="https://slack.com/api/files.upload",params=param, files=files)
+    os.chdir('../')
 
 #物性値
 print "物性値入力"
-rho = input("rho(流体密度)[kg/m^3] = ")
-nu = input("nu（動粘性係数）[m^2/s] = ")
+rho = 1000#input("rho(流体密度)[kg/m^3] = ")
+nu = 0.000001#input("nu（動粘性係数）[m^2/s] = ")
 
 #定数
 print "定数入力"
-H = input("H(流れ場y方向長さ)[m] = ")
-L = input("L(流れ場x方向長さ)[m] = ")
-T = input("T(移流時間)[s] = ")
-deltaT = input("deltaT(時間刻み)[s] = ")
-deltax = input("deltax(x方向要素間距離)[m] = ")
-deltay = input("deltay(y方向要素間距離)[m] = ")
-omega = input("omega(緩和係数) = ")
-M = input("M(連続の式収束条件) = ")
-Fx_electrode = input("Fx_electrode(電極付近の電気的なx方向の力) = ")
+H = 0.002#input("H(流れ場y方向長さ)[m] = ")
+L = 0.006#input("L(流れ場x方向長さ)[m] = ")
+T = 0.5#input("T(移流時間)[s] = ")
+deltaT = 0.00001#input("deltaT(時間刻み)[s] = ")
+deltax = 0.0001#input("deltax(x方向要素間距離)[m] = ")
+deltay = 0.0001#input("deltay(y方向要素間距離)[m] = ")
+omega = 0.5#input("omega(緩和係数) = ")
+M = 0.000001#input("M(連続の式収束条件) = ")
 
 #物性値、定数の出力
 constant_list = [["rho",rho],["nu",nu],["H",H],["L",L],["T",T],["deltaT",deltaT],["deltax",deltax],["deltay",deltay],["omega",omega],["M",M]]
-if Fx_electrode != 0:
-    constant_list.append(["Fx_electrode",Fx_electrode])
 with open(os.path.join(str(value[1]),"constant.csv"), 'w') as file:
     writer = csv.writer(file, lineterminator = '\n')
     writer.writerows(constant_list)
@@ -49,7 +73,7 @@ print "n :" + str(n)
 #初期条件
 u_BoundaryAD = 0.0#x方向速度[m/s]@inlet
 v_BoundaryAD = 0.0#y方向速度[m/s]@inlet
-p_BoundaryAD = 0.0#圧力[Pa]@inlet
+p_BoundaryAD = 100.0#圧力[Pa]@inlet
 
 u_WallAB = 0.0#x方向速度[m/s]@wallAB
 v_WallAB = 0.0#x方向速度[m/s]@wallAB
@@ -167,7 +191,7 @@ i = 0
 j = 0
 while 0 <= j <= n:
     while 0 <= i <= ms:
-        X[i][j] = deltax * i
+        X[i][j] = deltax * (i-0.5)
         i += 1
     i = 0
     j += 1
@@ -176,7 +200,7 @@ i = 0
 j = 0
 while 0 <= j <= n:
     while 0 <= i <= ms:
-        Y[i][j] = deltay * j
+        Y[i][j] = deltay * (j-0.5)
         i += 1
     i = 0
     j += 1
@@ -191,9 +215,9 @@ def graph():
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
-    plt.pcolor(X_out, Y_out, velocity_out)
-    plt.colorbar()
-    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(1.0/(L*0.03/2)), headwidth=5, headlength=8, headaxislength=4)
+    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(5.0/6*L, -1.0/5*H, np.max(velocity_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.text(5.0/6*L, -2.0/5*H, str('{:.2E}'.format(np.max(velocity_out))) + '[m/s]')
     plt.axis('equal')
     if m % 10000 == 0:
         plt.title('velocity_vector(t='+str(t)+',m='+str(m)+')')
@@ -204,10 +228,10 @@ def graph():
     plt.xlim(-1.0*L/10, 11.0*L/10)
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
-    plt.draw()
     ax = plt.axes()
-    r = patches.Rectangle(xy=(0, -0.001), width=0.0005, height=0.0005, fc='y')
+    r = patches.Rectangle(xy=(0, 0), width=L, height=H, ec='#000000', fill=False)
     ax.add_patch(r)
+    plt.draw()
     if m % 10000 == 0:
         plt.savefig("velocity(t=" + str(t) +",m="+str(m)+ ").png", dpi=600)
     else:
@@ -228,6 +252,9 @@ def graph():
     plt.xlim(-1.0*L/10, 11.0*L/10)
     plt.ylim(-1.0*H/10, 11.0*H/10)
     plt.grid()
+    ax = plt.axes()
+    r = patches.Rectangle(xy=(0, 0), width=L, height=H, ec='#000000', fill=False)
+    ax.add_patch(r)
     if m % 10000 == 0:
         plt.savefig("pressure(t=" + str(t) +",m="+str(m)+ ").png", dpi=600)
     else:
@@ -259,10 +286,7 @@ while t <= T:
     j = 1
     while 1 <= i <= ms-2:
         while 1 <= j <= n-1:
-            if Fx_electrode != 0 and ms*45.0/100 <= i <= ms*55.0/100 and 1 <= j <= 3:
-                u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j]+ 1.0 / rho * Fx_electrode)
-            else:
-                u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j])
+            u_old[i][j] = u_old[i][j] + deltaT * (-(1.0/rho)*(p_old[i+1][j]-p_old[i][j])/deltax - CNVU[i][j] + DIFU[i][j])
             j += 1
         j = 1
         i += 1
@@ -348,10 +372,15 @@ while t <= T:
         m += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルで出力
-    if t == deltaT or int(t/deltaT) % 20 == 0:
+    if t == deltaT or int(t/deltaT) % 100 == 0:
         csvout()
         graph()
+    if t == deltaT or int(t/deltaT) % 500 == 0:
+        figure_upload("velocity(t=" + str(t) + ").png")
+        figure_upload("pressure(t=" + str(t) + ").png")
 
     #時間を進める
     t = t + deltaT
 print "Calculation ends"
+figure_upload("velocity(t=" + str(t) + ").png")
+figure_upload("pressure(t=" + str(t) + ").png")
