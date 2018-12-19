@@ -801,10 +801,10 @@ while t <= T:
         m2 += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルで出力
-    if t == deltaT or int(t/deltaT) % 20 == 0:
+    if t == deltaT or int(t/deltaT) % 100 == 0:
         csvout02()
         graph02()
-    if t == deltaT or int(t/deltaT) % 100 == 0:
+    if t == deltaT or int(t/deltaT) % 500 == 0:
         slack_mention()
         figure_upload("electricalcharge(t=" + str(t) + ").png")
         figure_upload("electricalcharge(enlarge, t=" + str(t) + ").png")
