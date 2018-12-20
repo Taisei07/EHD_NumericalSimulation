@@ -57,7 +57,6 @@ deltax = 0.0001#input("deltax(x方向要素間距離)[m] = ")
 deltay = 0.0001#input("deltay(y方向要素間距離)[m] = ")
 omega = 0.5#input("omega(緩和係数) = ")
 M1 = 0.000001#input("M1(連続の式収束条件) = ")
-M2 = 75#input("M2(圧力の収束条件)")
 
 #物性値、定数の出力
 constant_list = [["rho",rho],["nu",nu],["H",H],["L",L],["T",T],["deltaT",deltaT],["deltax",deltax],["deltay",deltay],["omega",omega],["M1",M1]]
@@ -92,8 +91,6 @@ p_WallCD = 0.0#圧力[Pa]@wallCD
 u_old = np.array([[0.0] * (n+1) for i in range(ms+1)])#ms:x方向,n:y方向
 v_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 p_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
-p = np.array([[0.0] * (n+1) for i in range(ms+1)])
-p_old1 = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #対流項CNVと粘性項DIF配列設定
 CNVU = np.array([[0.0] * (n+1) for i in range(ms+1)])
@@ -129,7 +126,7 @@ def boundary_condition():
     #BoundaryAD
     j = 0
     while 0 <= j <= n-1:
-        u_old[0][j] = u_old[1][j]
+        u_old[0][j] = 1.5 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
         v_old[0][j] = v_old[1][j]
         p_old[0][j] = p_old[1][j]
         j += 1
@@ -156,55 +153,6 @@ def boundary_condition():
         j += 1
 boundary_condition()
 
-def boundary_condition_p():
-    j = 0
-    while 0 <= j <= n-1:
-        p[0][j] = p[1][j]
-        j += 1
-    #WallAB
-    i = 0
-    while 0 <= i <= ms-1:
-        p[i][0] = p[i][1]
-        i += 1
-    #WallCD
-    i = 0
-    while 0 <= i <= ms-1:
-        p[i][n] = p[i][n-1]
-        i += 1
-    #BoundaryBC
-    j = 0
-    while 0 <= j <= n-1:
-        p[ms][j] = p[ms-1][j]
-        j += 1
-
-def p_calculation():
-    DPmax = M2 + 1
-    m2 = 1
-    while DPmax > M2:
-        print str(value[1])
-        print "t = " + str(t)
-        print "m2 = " + str(m2)
-        i = 0
-        j = 0
-        while 0 <= i <= ms:
-            while 0 <= j <= n:
-                p_old1[i][j] = p[i][j]
-                j += 1
-            j = 0
-            i += 1
-        i = 1
-        j = 1
-        while 1 <= j <= n-1:
-            while 1 <= i <= ms-1:
-                p[i][j] = 1.0 * (deltax * deltay)**2 / (2 * ((deltax**2)+(deltay**2))) * (((p[i+1][j]+p[i-1][j])/(deltax**2) + (p[i][j+1]+p[i][j-1])/(deltay**2)) + rho * (((u_old[i+1][j]-u_old[i-1][j])/(2*deltax))**2 + 2.0 * (v_old[i+1][j]-v_old[i-1][j])/(2*deltax)*(u_old[i][j+1]-u_old[i][j-1])/(2*deltay) + ((v_old[i][j+1]-v_old[i][j-1])/(2*deltay))**2))
-                i += 1
-            i = 1
-            j += 1
-        boundary_condition_p()
-        DPmax = np.max(p-p_old1)
-        print "DPmax = " + str(DPmax)
-        m2 += 1
-
 #初期におけるDIV
 while 1 <= i <= ms-1:
     while 1 <= j <= n-1:
@@ -216,13 +164,11 @@ while 1 <= i <= ms-1:
 #初期値を出力
 t = 0
 m1 = 1
-m2 = 1
 #csvファイルで出力
 def csvout():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
-    p_out2 = p.transpose()
     DIV_out = DIV.transpose()
     import csv
     with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
@@ -237,9 +183,6 @@ def csvout():
     with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerows(DIV_out)
-    with open(os.path.join(str(value[1]),"pnew_(t="+str(t)+")"+".csv"), 'w') as file:
-        writer = csv.writer(file, lineterminator = '\n')
-        writer.writerows(p_out2)
 csvout()
 
 #グラフを作成して保存する
@@ -268,7 +211,6 @@ def graph():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
-    p_out2 = p.transpose()
     velocity_out = np.sqrt(u_out**2+v_out**2)
     #ディレクトリ移動
     os.chdir(str(value[1]))
@@ -317,23 +259,6 @@ def graph():
         plt.savefig("pressure(t=" + str(t) +",m1="+str(m1)+ ").png", dpi=600)
     else:
         plt.savefig("pressure(t=" + str(t) + ").png", dpi=600)
-    plt.cla()
-    plt.clf()
-    plt.close()
-    #圧力分布作成2
-    plt.pcolor(X_out, Y_out, p_out2)
-    plt.colorbar()
-    plt.axis('equal')
-    plt.title('newpressure_distribution(t='+str(t)+')')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.xlim(-1.0*L/10, 11.0*L/10)
-    plt.ylim(-1.0*H/10, 11.0*H/10)
-    plt.grid()
-    ax = plt.axes()
-    r = patches.Rectangle(xy=(0, 0), width=L, height=H, ec='#000000', fill=False)
-    ax.add_patch(r)
-    plt.savefig("newpressure(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
@@ -447,8 +372,6 @@ while t <= T:
             graph()
         m1 += 1
         #Dmax = 0#強制的ループ終了用
-    #圧力を求める
-    p_calculation()
     #csvファイルで出力
     if t == deltaT or int(t/deltaT) % 100 == 0:
         csvout()
