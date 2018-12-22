@@ -69,7 +69,7 @@ print "定数入力"
 H = 0.002#input("H(流れ場y方向長さ)[m] = ")
 L = 0.006#input("L(流れ場x方向長さ)[m] = ")
 T = 0.5#input("T(移流時間)[s] = ")
-deltaT = 0.00001#input("deltaT(時間刻み)[s] = ")
+deltaT = 0.000005#input("deltaT(時間刻み)[s] = ")
 deltax = 0.0001#input("deltax(x方向要素間距離)[m] = ")
 deltay = 0.0001#input("deltay(y方向要素間距離)[m] = ")
 omega = 0.5#input("omega(緩和係数) = ")
@@ -368,12 +368,12 @@ while t <= T:
         #Dmax = 0#強制的ループ終了用
 
     #ポアソン型で圧力を求める
-    
+
     #csvファイルで出力
-    if t == deltaT or int(t/deltaT) % 100 == 0:
+    if t == deltaT or int(t/deltaT) % 25 == 0:
         csvout()
         graph()
-    if t == deltaT or int(t/deltaT) % 500 == 0:
+    if t == deltaT or int(t/deltaT) % 50 == 0:
         LineMessage()
         LineFigure("velocity(t=" + str(t) + ").png")
         LineFigure("pressure(t=" + str(t) + ").png")
