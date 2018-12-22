@@ -470,6 +470,28 @@ def graph01():
     Fy_out = Fy.transpose()
     F_calculation()
     F_out = F.transpose()
+    j = 0
+    while 0 <= j <= ms:
+        Ex_out[0][j] = 0
+        Ex_out[n][j] = 0
+        Ey_out[0][j] = 0
+        Ey_out[n][j] = 0
+        Fx_out[0][j] = 0
+        Fx_out[n][j] = 0
+        Fy_out[0][j] = 0
+        Fy_out[n][j] = 0
+        j += 1
+    i = 0
+    while 0 <= i <= n:
+        Ex_out[i][0] = 0
+        Ex_out[i][ms] = 0
+        Ey_out[i][0] = 0
+        Ey_out[i][ms] = 0
+        Fx_out[i][0] = 0
+        Fx_out[i][ms] = 0
+        Fy_out[i][0] = 0
+        Fy_out[i][ms] = 0
+        i += 1
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #電荷密度分布作成
@@ -596,6 +618,20 @@ def graph02():
     v_out = v_old.transpose()
     p_out = p_old.transpose()
     velocity_out = np.sqrt(u_out**2+v_out**2)
+    j = 0
+    while 0 <= j <= ms:
+        u_out[0][j] = 0
+        u_out[n][j] = 0
+        v_out[0][j] = 0
+        v_out[n][j] = 0
+        j += 1
+    i = 0
+    while 0 <= i <= n:
+        u_out[i][0] = 0
+        u_out[i][ms] = 0
+        v_out[i][0] = 0
+        v_out[i][ms] = 0
+        i += 1
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
@@ -747,7 +783,7 @@ while t <= T:
     #圧力補正ループ
     m2 = 1
     Dmax = M1 + 1
-    while Dmax > M1 :
+    while Dmax > M1 and m2 < 100000:
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
         print str(value[1])
         print "t = " + str(t)
