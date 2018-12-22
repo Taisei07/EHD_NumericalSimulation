@@ -9,7 +9,7 @@ import requests
 import os
 import sys
 sys.path.append('../../../')
-from module.slackAPI import TOKEN
+from module.LineAPI import line_notify_token
 import csv
 value = sys.argv
 os.chdir('/media/pascal/HD-GDU3/Tajima_backup/EHD/result')
@@ -17,6 +17,23 @@ os.mkdir(str(value[1]))
 import time
 start_time = time.time()
 import requests
+
+#Line通知
+def LineMessage():
+    process_time = time.time() - start_time
+    line_notify_api = 'https://notify-api.line.me/api/notify'
+    headers = {'Authorization': 'Bearer ' + line_notify_token}
+    # メッセージ
+    payload = {'message': str(value[1]) + '\n' + 'process_time : ' + str(process_time)}
+    requests.post(line_notify_api, data=payload, headers=headers)
+
+def LineFigure(A):
+    line_notify_api = 'https://notify-api.line.me/api/notify'
+    headers = {'Authorization': 'Bearer ' + line_notify_token}
+    # メッセージ
+    payload = {'message': str(A)}
+    files = {"imageFile": open(A, 'rb')}
+    requests.post(line_notify_api, data=payload, headers=headers, files=files)
 
 #slack通知
 def slack_mention():
@@ -340,29 +357,6 @@ while t <= T:
 
         #---通常モード---
         Dmax = np.max(DIV)
-        #---↑---
-        #---↓Dmaxの発散を検知したら補正ループを終了する↓---
-        #Dmax_new = np.max(DIV)
-        #if Dmax_new > Dmax:#発散：自動的に計算終了
-            #print  "Divergence in Dmax = " + str(Dmax_new)
-            #Dmax = 0
-        #else:#収束：Dmaxを更新して計算続行
-            #if m > 500:
-                #print  "stop at m = " + str(m) +"(Dmax = " + str(Dmax_new) + ")"
-                #Dmax = 0
-            #else:
-                #Dmax = Dmax_new
-                #print "Converging now"
-        #---↑---
-        #---↓圧力補正計算を回数で制御する↓---
-        #Dmax_new = np.max(DIV)
-        #if m >200:
-            #print  "stop at m = " + str(m) +"(Dmax = " + str(Dmax_new) + ")"
-            #Dmax = 0
-        #else:
-            #Dmax = Dmax_new
-            #print "Converging now"
-        #---↑---
         print "Dmax = " + str(Dmax)
         print "deltap = " + str(deltap)
         process_time = time.time() - start_time
@@ -372,16 +366,21 @@ while t <= T:
             graph()
         m1 += 1
         #Dmax = 0#強制的ループ終了用
+
+    #ポアソン型で圧力を求める
+    
     #csvファイルで出力
     if t == deltaT or int(t/deltaT) % 100 == 0:
         csvout()
         graph()
     if t == deltaT or int(t/deltaT) % 500 == 0:
-        figure_upload("velocity(t=" + str(t) + ").png")
-        figure_upload("pressure(t=" + str(t) + ").png")
+        LineMessage()
+        LineFigure("velocity(t=" + str(t) + ").png")
+        LineFigure("pressure(t=" + str(t) + ").png")
 
     #時間を進める
     t = t + deltaT
 print "Calculation ends"
-figure_upload("velocity(t=" + str(t) + ").png")
-figure_upload("pressure(t=" + str(t) + ").png")
+LineMessage()
+LineFigure("velocity(t=" + str(t) + ").png")
+Linefigure("pressure(t=" + str(t) + ").png")
