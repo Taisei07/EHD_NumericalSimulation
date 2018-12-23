@@ -124,20 +124,20 @@ def boundary_condition():
     while 0 <= j <= n-1:
         u_old[0][j] = u_old[1][j]
         v_old[0][j] = v_old[1][j]
-        p_old[0][j] = 0#p_old[1][j]
+        p_old[0][j] = p_old[1][j]
         j += 1
     #WallAB
     i = 0
     while 0 <= i <= ms-1:
         u_old[i][0] = -u_old[i][1]
-        v_old[i][0] = v_WallAB
+        v_old[i][0] = v_old[i][1]#v_WallAB
         p_old[i][0] = p_old[i][1]
         i += 1
     #WallCD
     i = 0
     while 0 <= i <= ms-1:
         u_old[i][n] = -u_old[i][n-1]
-        v_old[i][n-1] = v_WallCD
+        v_old[i][n-1] = v_old[i][n-2]#v_WallCD
         p_old[i][n] = p_old[i][n-1]
         i += 1
     #BoundaryBC
@@ -398,6 +398,23 @@ while t <= T:
             j += 1
         j = 1
         i += 1
+    j = 0
+    while 0 <= j <= n-1:
+        p[0][j] = p[1][j]
+        j += 1
+    i = 0
+    while 0 <= i <= ms-1:
+        p[i][0] = p[i][1]
+        i += 1
+    i = 0
+    while 0 <= i <= ms-1:
+        p[i][n] = p[i][n-1]
+        i += 1
+    j = 0
+    while 0 <= j <= n-1:
+        p[ms][j] = p[ms-1][j]
+        j += 1
+
     #csvファイルで出力
     if t == deltaT or int(t/deltaT) % 25 == 0:
         csvout()
