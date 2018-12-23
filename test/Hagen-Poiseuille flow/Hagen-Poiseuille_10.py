@@ -52,6 +52,7 @@ deltax = 0.0001#input("deltax(x方向要素間距離)[m] = ")
 deltay = 0.0001#input("deltay(y方向要素間距離)[m] = ")
 omega = 0.5#input("omega(緩和係数) = ")
 M1 = 0.000001#input("M1(連続の式収束条件) = ")
+M2 = 0.00001
 
 #物性値、定数の出力
 constant_list = [["rho",rho],["nu",nu],["H",H],["L",L],["T",T],["deltaT",deltaT],["deltax",deltax],["deltay",deltay],["omega",omega],["M1",M1]]
@@ -342,7 +343,7 @@ while t <= T:
     #圧力補正ループ
     m1 = 1
     Dmax = M1 + 1
-    while Dmax > M1 and m1 < 100000:
+    while Dmax > M1 and m1 < 200000:
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
         print str(value[1])
         print "t = " + str(t)
@@ -390,31 +391,35 @@ while t <= T:
         #Dmax = 0#強制的ループ終了用
 
     #ポアソン型で圧力を求める
-    i = 1
-    j = 1
-    while 1 <= i <= ms-1:
-        while 1 <= j <= n-1:
-            p_new[i][j] = 1.0 * (2.0 * (deltax**2 + deltay**2)) * ((deltax*deltay)**2/rho*(((u_old[i+1][j]-u_old[i-1][j])/(2*deltax))**2+(v_old[i+1][j]-v_old[i-1][j])/(2*deltax)*(u_old[i][j+1]-u_old[i][j-1])/(2*deltay)+(v_old[i][j+1]-v_old[i][j-1])/(2*deltay)**2)+deltay**2*(p_new[i+1][j]+p_new[i-1][j])+deltax**2*(p_new[i][j+1]+p_new[i][j-1]))
-            j += 1
+    Dpmax = M2 + 1
+    while Dpmax > M2:
+        p_first = p_new
+        i = 1
         j = 1
-        i += 1
-    #ポアソン型のboundarycondition
-    j = 0
-    while 0 <= j <= n-1:
-        p_new[0][j] = p_new[1][j]
-        j += 1
-    i = 0
-    while 0 <= i <= ms-1:
-        p_new[i][0] = p_new[i][1]
-        i += 1
-    i = 0
-    while 0 <= i <= ms-1:
-        p_new[i][n] = p_new[i][n-1]
-        i += 1
-    j = 0
-    while 0 <= j <= n-1:
-        p_new[ms][j] = p_new[ms-1][j]
-        j += 1
+        while 1 <= i <= ms-1:
+            while 1 <= j <= n-1:
+                p_new[i][j] = 1.0 * (2.0 * (deltax**2 + deltay**2)) * ((deltax*deltay)**2/rho*(((u_old[i+1][j]-u_old[i-1][j])/(2*deltax))**2+(v_old[i+1][j]-v_old[i-1][j])/(2*deltax)*(u_old[i][j+1]-u_old[i][j-1])/(2*deltay)+(v_old[i][j+1]-v_old[i][j-1])/(2*deltay)**2)+deltay**2*(p_new[i+1][j]+p_new[i-1][j])+deltax**2*(p_new[i][j+1]+p_new[i][j-1]))
+                j += 1
+            j = 1
+            i += 1
+        #ポアソン型のboundarycondition
+        j = 0
+        while 0 <= j <= n-1:
+            p_new[0][j] = p_new[1][j]
+            j += 1
+        i = 0
+        while 0 <= i <= ms-1:
+            p_new[i][0] = p_new[i][1]
+            i += 1
+        i = 0
+        while 0 <= i <= ms-1:
+            p_new[i][n] = p_new[i][n-1]
+            i += 1
+        j = 0
+        while 0 <= j <= n-1:
+            p_new[ms][j] = p_new[ms-1][j]
+            j += 1
+        DPmax = np.max(p_new - p_first)
 
     #csvファイルで出力
     if t == deltaT or int(t/deltaT) % 25 == 0:
