@@ -403,10 +403,16 @@ while t <= T:
         csvout()
         graph()
     if t == deltaT or int(t/deltaT) % 50 == 0:
-        LineMessage()
-        LineFigure("velocity(t=" + str(t) + ").png")
-        LineFigure("pressure(t=" + str(t) + ").png")
-        LineFigure("pressure2(t=" + str(t) + ").png")
+        if m1 % 10000 == 0:
+            LineMessage()
+            LineFigure("velocity(t=" + str(t) +",m1="+str(m1)+ ").png")
+            LineFigure("pressure(t=" + str(t) +",m1="+str(m1)+ ").png")
+            LineFigure("pressure2(t=" + str(t) +",m1="+str(m1)+ ").png")
+        else:
+            LineMessage()
+            LineFigure("velocity(t=" + str(t) + ").png")
+            LineFigure("pressure(t=" + str(t) + ").png")
+            LineFigure("pressure2(t=" + str(t) + ").png")
 
     #時間を進める
     t = t + deltaT
