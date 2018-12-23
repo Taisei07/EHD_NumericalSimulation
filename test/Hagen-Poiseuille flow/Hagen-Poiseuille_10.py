@@ -68,7 +68,7 @@ print "n :" + str(n)
 #初期条件
 u_BoundaryAD = 0.0#x方向速度[m/s]@inlet
 v_BoundaryAD = 0.0#y方向速度[m/s]@inlet
-p_BoundaryAD = 100.0#圧力[Pa]@inlet
+p_BoundaryAD = 50.0#圧力[Pa]@inlet
 
 u_WallAB = 0.0#x方向速度[m/s]@wallAB
 v_WallAB = 0.0#x方向速度[m/s]@wallAB
@@ -124,7 +124,7 @@ def boundary_condition():
     while 0 <= j <= n-1:
         u_old[0][j] = u_old[1][j]
         v_old[0][j] = v_old[1][j]
-        p_old[0][j] = p_old[1][j]
+        p_old[0][j] = 0#p_old[1][j]
         j += 1
     #WallAB
     i = 0
