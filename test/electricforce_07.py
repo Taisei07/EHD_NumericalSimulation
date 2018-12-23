@@ -746,7 +746,7 @@ while t <= T:
             j += 1
         j = 1
         i += 1
-    if t == deltaT or int(t/deltaT) % 100 == 0:
+    if t == deltaT or int(t/deltaT) % 25 == 0:
         csvout01()
         graph01()
     #u_old,v_old仮値設定①粘性項・対流項配列の設定
