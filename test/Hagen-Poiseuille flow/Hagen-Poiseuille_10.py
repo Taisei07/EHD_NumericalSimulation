@@ -86,7 +86,7 @@ p_WallCD = 0.0#圧力[Pa]@wallCD
 u_old = np.array([[0.0] * (n+1) for i in range(ms+1)])#ms:x方向,n:y方向
 v_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 p_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
-p = np.array([[0.0] * (n+1) for i in range(ms+1)])
+p_new = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #対流項CNVと粘性項DIF配列設定
 CNVU = np.array([[0.0] * (n+1) for i in range(ms+1)])
@@ -165,7 +165,7 @@ def csvout():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
-    p_out2 = p.transpose()
+    p_out_new = p_new.transpose()
     DIV_out = DIV.transpose()
     import csv
     with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
@@ -180,9 +180,9 @@ def csvout():
     with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerows(DIV_out)
-    with open(os.path.join(str(value[1]),"p2_(t="+str(t)+")"+".csv"), 'w') as file:
+    with open(os.path.join(str(value[1]),"p_new(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
-        writer.writerows(p_out2)
+        writer.writerows(p_out_new)
 csvout()
 
 #グラフを作成して保存する
@@ -212,7 +212,7 @@ def graph():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
-    p_out2 = p.transpose()
+    p_out_new = p_new.transpose()
     velocity_out = np.sqrt(u_out**2+v_out**2)
     j = 0
     while 0 <= j <= ms:
@@ -279,13 +279,13 @@ def graph():
     plt.clf()
     plt.close()
     #ポアソン型による圧力分布作成
-    plt.pcolor(X_out, Y_out, p_out2)
+    plt.pcolor(X_out, Y_out, p_out_new)
     plt.colorbar()
     plt.axis('equal')
     if m1 % 10000 == 0:
-        plt.title('pressure_distribution2(t='+str(t)+',m1='+str(m1)+')')
+        plt.title('pressure_distribution_new(t='+str(t)+',m1='+str(m1)+')')
     else:
-        plt.title('pressure_distribution2(t='+str(t)+')')
+        plt.title('pressure_distribution_new(t='+str(t)+')')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.xlim(-1.0*L/10, 11.0*L/10)
@@ -295,9 +295,9 @@ def graph():
     r = patches.Rectangle(xy=(0, 0), width=L, height=H, ec='#000000', fill=False)
     ax.add_patch(r)
     if m1 % 10000 == 0:
-        plt.savefig("pressure2(t=" + str(t) +",m1="+str(m1)+ ").png", dpi=600)
+        plt.savefig("pressure_new(t=" + str(t) +",m1="+str(m1)+ ").png", dpi=600)
     else:
-        plt.savefig("pressure2(t=" + str(t) + ").png", dpi=600)
+        plt.savefig("pressure_new(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
@@ -394,25 +394,26 @@ while t <= T:
     j = 1
     while 1 <= i <= ms-1:
         while 1 <= j <= n-1:
-            p[i][j] = 1.0 * (2.0 * (deltax**2 + deltay**2)) * ((deltax*deltay)**2/rho*(((u_old[i+1][j]-u_old[i-1][j])/(2*deltax))**2+(v_old[i+1][j]-v_old[i-1][j])/(2*deltax)*(u_old[i][j+1]-u_old[i][j-1])/(2*deltay)+(v_old[i][j+1]-v_old[i][j-1])/(2*deltay)**2)+deltay**2*(p_old[i+1][j]+p_old[i-1][j])+deltax**2*(p_old[i][j+1]+p_old[i][j-1]))
+            p_new[i][j] = 1.0 * (2.0 * (deltax**2 + deltay**2)) * ((deltax*deltay)**2/rho*(((u_old[i+1][j]-u_old[i-1][j])/(2*deltax))**2+(v_old[i+1][j]-v_old[i-1][j])/(2*deltax)*(u_old[i][j+1]-u_old[i][j-1])/(2*deltay)+(v_old[i][j+1]-v_old[i][j-1])/(2*deltay)**2)+deltay**2*(p_new[i+1][j]+p_new[i-1][j])+deltax**2*(p_new[i][j+1]+p_new[i][j-1]))
             j += 1
         j = 1
         i += 1
+    #ポアソン型のboundarycondition
     j = 0
     while 0 <= j <= n-1:
-        p[0][j] = p[1][j]
+        p_new[0][j] = p_new[1][j]
         j += 1
     i = 0
     while 0 <= i <= ms-1:
-        p[i][0] = p[i][1]
+        p_new[i][0] = p_new[i][1]
         i += 1
     i = 0
     while 0 <= i <= ms-1:
-        p[i][n] = p[i][n-1]
+        p_new[i][n] = p_new[i][n-1]
         i += 1
     j = 0
     while 0 <= j <= n-1:
-        p[ms][j] = p[ms-1][j]
+        p_new[ms][j] = p_new[ms-1][j]
         j += 1
 
     #csvファイルで出力
@@ -424,12 +425,12 @@ while t <= T:
             LineMessage()
             LineFigure("velocity(t=" + str(t) +",m1="+str(m1)+ ").png")
             LineFigure("pressure(t=" + str(t) +",m1="+str(m1)+ ").png")
-            LineFigure("pressure2(t=" + str(t) +",m1="+str(m1)+ ").png")
+            LineFigure("pressure_new(t=" + str(t) +",m1="+str(m1)+ ").png")
         else:
             LineMessage()
             LineFigure("velocity(t=" + str(t) + ").png")
             LineFigure("pressure(t=" + str(t) + ").png")
-            LineFigure("pressure2(t=" + str(t) + ").png")
+            LineFigure("pressure_new(t=" + str(t) + ").png")
 
     #時間を進める
     t = t + deltaT
@@ -437,4 +438,4 @@ print "Calculation ends"
 LineMessage()
 LineFigure("velocity(t=" + str(t) + ").png")
 Linefigure("pressure(t=" + str(t) + ").png")
-Linefigure("pressure2(t=" + str(t) + ").png")
+Linefigure("pressure_new(t=" + str(t) + ").png")
