@@ -160,13 +160,11 @@ while 1 <= i <= ms-1:
 #初期値を出力
 t = 0
 m1 = 1
-m2 = 1
 #csvファイルで出力
 def csvout():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
-    p_out2 = p.transpose()
     DIV_out = DIV.transpose()
     import csv
     with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
