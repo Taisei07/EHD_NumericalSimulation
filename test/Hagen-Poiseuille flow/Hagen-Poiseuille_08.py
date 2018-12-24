@@ -211,7 +211,7 @@ def graph():
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
-    plt.quiver(X_out, Y_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(X_out[1:ms, 1:n], Y_out[1:ms, 1:n], u_out[1:ms, 1:n], v_out[1:ms, 1:n], angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.quiver(5.0/6*L, -1.0/5*H, np.max(velocity_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.text(5.0/6*L, -2.0/5*H, str('{:.2E}'.format(np.max(velocity_out))) + '[m/s]')
     plt.axis('equal')
