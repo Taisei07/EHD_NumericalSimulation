@@ -87,7 +87,6 @@ p_WallCD = 0.0#圧力[Pa]@wallCD
 u_old = np.array([[0.0] * (n+1) for i in range(ms+1)])#ms:x方向,n:y方向
 v_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 p_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
-p_new = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #対流項CNVと粘性項DIF配列設定
 CNVU = np.array([[0.0] * (n+1) for i in range(ms+1)])
@@ -134,7 +133,6 @@ def csvout():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
-    p_out_new = p_new.transpose()
     DIV_out = DIV.transpose()
     import csv
     with open(os.path.join(str(value[1]),"u_(t="+str(t)+")"+".csv"), 'w') as file:
@@ -149,9 +147,6 @@ def csvout():
     with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerows(DIV_out)
-    with open(os.path.join(str(value[1]),"p_new(t="+str(t)+")"+".csv"), 'w') as file:
-        writer = csv.writer(file, lineterminator = '\n')
-        writer.writerows(p_out_new)
 csvout()
 
 #グラフを作成して保存する
@@ -167,7 +162,6 @@ def graph():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
-    p_out_new = p_new.transpose()
     velocity_out = np.sqrt(u_out**2+v_out**2)
     u_out[0:1, :] = 0
     u_out[n:n+1, :] = 0
@@ -224,29 +218,6 @@ def graph():
         plt.savefig("pressure(t=" + str(t) +",m1="+str(m1)+ ").png", dpi=600)
     else:
         plt.savefig("pressure(t=" + str(t) + ").png", dpi=600)
-    plt.cla()
-    plt.clf()
-    plt.close()
-    #ポアソン型による圧力分布作成
-    plt.pcolor(X_out, Y_out, p_out_new)
-    plt.colorbar()
-    plt.axis('equal')
-    if m1 % 10000 == 0:
-        plt.title('pressure_distribution_new(t='+str(t)+',m1='+str(m1)+')')
-    else:
-        plt.title('pressure_distribution_new(t='+str(t)+')')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.xlim(-1.0*L/10, 11.0*L/10)
-    plt.ylim(-1.0*H/10, 11.0*H/10)
-    plt.grid()
-    ax = plt.axes()
-    r = patches.Rectangle(xy=(0, 0), width=L, height=H, ec='#000000', fill=False)
-    ax.add_patch(r)
-    if m1 % 10000 == 0:
-        plt.savefig("pressure_new(t=" + str(t) +",m1="+str(m1)+ ").png", dpi=600)
-    else:
-        plt.savefig("pressure_new(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
