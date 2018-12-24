@@ -124,7 +124,7 @@ def boundary_condition():
 boundary_condition()
 
 #初期におけるDIV
-DIV[1:ms,1:n] = np.array([abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay)] for i in range(1,ms) for j in range(1,n)])
+DIV[1:ms,1:n] = np.array([[abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay) for i in range(1,ms)] for j in range(1,n)])
 #初期値を出力
 t = 0
 m1 = 1
