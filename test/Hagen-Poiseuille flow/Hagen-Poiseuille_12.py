@@ -256,7 +256,7 @@ while t <= T:
         #---通常モード---
         Dmax = np.max(DIV)
         print "Dmax = " + str(Dmax)
-        print "deltap = " + str(deltap)
+        print "deltap = " + str(np.max(deltap))
         process_time = time.time() - start_time
         print "process_time = " + str(process_time)
         if m1 % 10000 == 0:
