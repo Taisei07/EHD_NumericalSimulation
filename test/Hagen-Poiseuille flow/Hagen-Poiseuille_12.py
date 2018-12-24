@@ -239,6 +239,7 @@ while t <= T:
     #圧力補正ループ
     m1 = 1
     Dmax = M1 + 1
+    deltap = 1
     while Dmax > M1 and np.min(deltap) > 1.0e-26:
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
         print str(value[1])
