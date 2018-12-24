@@ -470,28 +470,6 @@ def graph01():
     Fy_out = Fy.transpose()
     F_calculation()
     F_out = F.transpose()
-    j = 0
-    while 0 <= j <= ms:
-        Ex_out[0][j] = 0
-        Ex_out[n][j] = 0
-        Ey_out[0][j] = 0
-        Ey_out[n][j] = 0
-        Fx_out[0][j] = 0
-        Fx_out[n][j] = 0
-        Fy_out[0][j] = 0
-        Fy_out[n][j] = 0
-        j += 1
-    i = 0
-    while 0 <= i <= n:
-        Ex_out[i][0] = 0
-        Ex_out[i][ms] = 0
-        Ey_out[i][0] = 0
-        Ey_out[i][ms] = 0
-        Fx_out[i][0] = 0
-        Fx_out[i][ms] = 0
-        Fy_out[i][0] = 0
-        Fy_out[i][ms] = 0
-        i += 1
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #電荷密度分布作成
@@ -545,7 +523,7 @@ def graph01():
     plt.clf()
     plt.close()
     #電場強度ベクトル作成
-    plt.quiver(X2_out, Y2_out, Ex_out, Ey_out, angles='xy', scale_units='xy', scale=np.max(E_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(X2_out[1:n, 1:ms], Y2_out[1:n, 1:ms], Ex_out[1:n, 1:ms], Ey_out[1:n, 1:ms], angles='xy', scale_units='xy', scale=np.max(E_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.quiver(5.0/6*L, -1.0/5*H, np.max(E_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(E_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.text(5.0/6*L, -2.0/5*H, str('{:.2e}'.format(np.max(E_out))) + '[V/m]')
     plt.axis('equal')
@@ -562,7 +540,7 @@ def graph01():
     plt.clf()
     plt.close()
     #電場強度ベクトル作成(拡大図)
-    plt.quiver(X2_out, Y2_out, Ex_out, Ey_out, angles='xy', scale_units='xy', scale=np.max(E_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(X2_out[1:n, 1:ms], Y2_out[1:n, 1:ms], Ex_out[1:n, 1:ms], Ey_out[1:n, 1:ms], angles='xy', scale_units='xy', scale=np.max(E_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.quiver(3.5/6*L, -1.0/5*H, np.max(E_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(E_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.text(3.5/6*L, -2.0/5*H, str('{:.2e}'.format(np.max(E_out))) + '[V/m]')
     plt.axis('equal')
@@ -578,7 +556,7 @@ def graph01():
     plt.clf()
     plt.close()
     #電気的な力Fベクトル作成
-    plt.quiver(X2_out, Y2_out, Fx_out, Fy_out, angles='xy', scale_units='xy', scale=np.max(F_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(X2_out[1:n, 1:ms], Y2_out[1:n, 1:ms], Fx_out[1:n, 1:ms], Fy_out[1:n, 1:ms], angles='xy', scale_units='xy', scale=np.max(F_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.quiver(5.0/6*L, -1.0/5*H, np.max(F_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(F_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.text(5.0/6*L, -2.0/5*H, str('{:.2e}'.format(np.max(F_out))) + '[m/s^2]')
     plt.axis('equal')
@@ -595,7 +573,7 @@ def graph01():
     plt.clf()
     plt.close()
     #電気的な力Fベクトル(拡大図)
-    plt.quiver(X2_out, Y2_out, Fx_out, Fy_out, angles='xy', scale_units='xy', scale=np.max(F_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(X2_out[1:n, 1:ms], Y2_out[1:n, 1:ms], Fx_out[1:n, 1:ms], Fy_out[1:n, 1:ms], angles='xy', scale_units='xy', scale=np.max(F_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.quiver(3.5/6*L, -1.0/5*H, np.max(F_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(F_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.text(3.5/6*L, -2.0/5*H, str('{:.2E}'.format(np.max(F_out))) + '[m/s^2]')
     plt.axis('equal')
@@ -618,24 +596,10 @@ def graph02():
     v_out = v_old.transpose()
     p_out = p_old.transpose()
     velocity_out = np.sqrt(u_out**2+v_out**2)
-    j = 0
-    while 0 <= j <= ms:
-        u_out[0][j] = 0
-        u_out[n][j] = 0
-        v_out[0][j] = 0
-        v_out[n][j] = 0
-        j += 1
-    i = 0
-    while 0 <= i <= n:
-        u_out[i][0] = 0
-        u_out[i][ms] = 0
-        v_out[i][0] = 0
-        v_out[i][ms] = 0
-        i += 1
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
-    plt.quiver(X2_out, Y2_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(X2_out[1:n, 1:ms], Y2_out[1:n, 1:ms], u_out[1:n, 1:ms], v_out[1:n, 1:ms], angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.quiver(5.0/6*L, -1.0/5*H, np.max(velocity_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.text(5.0/6*L, -2.0/5*H, str('{:.2E}'.format(np.max(velocity_out))) + '[m/s]')
     plt.axis('equal')
@@ -655,7 +619,7 @@ def graph02():
     plt.clf()
     plt.close()
     #速度ベクトル(拡大図)
-    plt.quiver(X2_out, Y2_out, u_out, v_out, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
+    plt.quiver(X2_out[1:n, 1:ms], Y2_out[1:n, 1:ms], u_out[1:n, 1:ms], v_out[1:n, 1:ms], angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.quiver(3.5/6*L, -1.0/5*H, np.max(velocity_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.text(3.5/6*L, -2.0/5*H, str('{:.2E}'.format(np.max(velocity_out))) + '[m/s]')
     plt.axis('equal')
