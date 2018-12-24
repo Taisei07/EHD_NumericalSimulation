@@ -108,15 +108,19 @@ def boundary_condition():
     #BoundaryAD
     u_old[0:1, 0:n] = u_old[1:2, 0:n]
     v_old[0:1, 0:n] = v_old[1:2, 0:n]
+    p_old[0:1, 0:n] = p_BoundaryAD
     #WallAB
     u_old[0:ms, 0:1] = -u_old[0:ms, 1:2]
     v_old[0:ms, 0:1] = v_WallAB
+    p_old[0:ms, 0:1] = p_old[0:ms, 1:2]
     #WallCD
     u_old[0:ms, n:n+1] = -u_old[0:ms, n-1:n]
     v_old[0:ms, n-1:n] = v_WallCD
+    p_old[0:ms, n:n+1] = p_old[0:ms, n-1:n]
     #BoundaryBC
     u_old[ms-1:ms, 0:n] = u_old[ms-2:ms-1, 0:n]
     v_old[ms:ms+1, 0:n] = v_old[ms-1:ms, 0:n]
+    p_old[ms:ms+1, 0:n] = p_BoundaryBC
 boundary_condition()
 
 #初期におけるDIV
@@ -235,7 +239,7 @@ while t <= T:
     #圧力補正ループ
     m1 = 1
     Dmax = M1 + 1
-    while Dmax > M1:
+    while Dmax > M1 and np.min(deltap) > 1.0e-26:
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
         print str(value[1])
         print "t = " + str(t)
