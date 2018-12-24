@@ -208,6 +208,20 @@ def graph():
     v_out = v_old.transpose()
     p_out = p_old.transpose()
     velocity_out = np.sqrt(u_out**2+v_out**2)
+    j = 0
+    while 0 <= j <= ms:
+        u_out[0][j] = 0
+        u_out[n][j] = 0
+        v_out[0][j] = 0
+        v_out[n][j] = 0
+        j += 1
+    i = 0
+    while 0 <= i <= n:
+        u_out[i][0] = 0
+        u_out[i][ms] = 0
+        v_out[i][0] = 0
+        v_out[i][ms] = 0
+        i += 1
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
