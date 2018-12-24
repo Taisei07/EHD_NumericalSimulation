@@ -294,37 +294,6 @@ while t <= T:
         m1 += 1
         #Dmax = 0#強制的ループ終了用
 
-    #ポアソン型で圧力を求める
-    Dpmax = M2 + 1
-    while Dpmax > M2:
-        p_first = p_new
-        i = 1
-        j = 1
-        while 1 <= i <= ms-1:
-            while 1 <= j <= n-1:
-                p_new[i][j] = 1.0 * (2.0 * (deltax**2 + deltay**2)) * ((deltax*deltay)**2/rho*(((u_old[i+1][j]-u_old[i-1][j])/(2*deltax))**2+(v_old[i+1][j]-v_old[i-1][j])/(2*deltax)*(u_old[i][j+1]-u_old[i][j-1])/(2*deltay)+(v_old[i][j+1]-v_old[i][j-1])/(2*deltay)**2)+deltay**2*(p_new[i+1][j]+p_new[i-1][j])+deltax**2*(p_new[i][j+1]+p_new[i][j-1]))
-                j += 1
-            j = 1
-            i += 1
-        #ポアソン型のboundarycondition
-        j = 0
-        while 0 <= j <= n-1:
-            p_new[0][j] = p_new[1][j]
-            j += 1
-        i = 0
-        while 0 <= i <= ms-1:
-            p_new[i][0] = p_new[i][1]
-            i += 1
-        i = 0
-        while 0 <= i <= ms-1:
-            p_new[i][n] = p_new[i][n-1]
-            i += 1
-        j = 0
-        while 0 <= j <= n-1:
-            p_new[ms][j] = p_new[ms-1][j]
-            j += 1
-        DPmax = np.max(p_new - p_first)
-
     #csvファイルで出力
     if t == deltaT or int(t/deltaT) % 25 == 0:
         csvout()
@@ -334,12 +303,10 @@ while t <= T:
             LineMessage()
             LineFigure("velocity(t=" + str(t) +",m1="+str(m1)+ ").png")
             LineFigure("pressure(t=" + str(t) +",m1="+str(m1)+ ").png")
-            LineFigure("pressure_new(t=" + str(t) +",m1="+str(m1)+ ").png")
         else:
             LineMessage()
             LineFigure("velocity(t=" + str(t) + ").png")
             LineFigure("pressure(t=" + str(t) + ").png")
-            LineFigure("pressure_new(t=" + str(t) + ").png")
 
     #時間を進める
     t = t + deltaT
@@ -347,4 +314,3 @@ print "Calculation ends"
 LineMessage()
 LineFigure("velocity(t=" + str(t) + ").png")
 Linefigure("pressure(t=" + str(t) + ").png")
-Linefigure("pressure_new(t=" + str(t) + ").png")
