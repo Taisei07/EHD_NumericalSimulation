@@ -783,7 +783,7 @@ while t <= T:
     #圧力補正ループ
     m2 = 1
     Dmax = M1 + 1
-    while Dmax > M1 and m2 < 100000:
+    while Dmax > M1:
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
         print str(value[1])
         print "t = " + str(t)
