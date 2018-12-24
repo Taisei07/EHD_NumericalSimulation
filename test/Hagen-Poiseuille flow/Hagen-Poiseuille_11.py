@@ -100,64 +100,31 @@ DIV = np.array([[0.0] * (n+1) for i in range(ms+1)])
 #圧力から速度場を決定する場合
 if p_BoundaryAD != p_BoundaryBC:
     #速度場設定
-    i = 0
-    j = 1
-    while 0 <= i <= ms-1:
-        while 1 <= j <= n-1:
-            u_old[i][j] = 1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(j-0.5)*deltay) * (H-(1.0*(j-0.5)*deltay))
-            j += 1
-        j = 1
-        i += 1
+    u_old[0:ms, 1:n] = [1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(i-0.5)*deltay) * (H-(1.0*(i-0.5)*deltay)) for i in range(1,n)]
     #圧力場指定
-    i = 0
-    j = 0
-    while 0 <= i <= ms:
-        while 0 <= j <= n:
-            p_old[i][j] = p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))
-            j += 1
-        j = 0
-        i += 1
-
+    p_old[0:ms+1, 0:n+1] = np.array([p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))] * (n+1) for i in range(ms+1)])
 #境界条件の設定
 def boundary_condition():
     #BoundaryAD
-    j = 0
-    while 0 <= j <= n-1:
-        u_old[0][j] = u_old[1][j]
-        v_old[0][j] = v_old[1][j]
-        p_old[0][j] = p_old[1][j]
-        j += 1
+    u_old[0:1, 0:n] = u_old[1:2, 0:n]
+    v_old[0:1, 0:n] = v_old[1:2, 0:n]
+    p_old[0:1, 0:n] = p_old[1:2, 0:n]
     #WallAB
-    i = 0
-    while 0 <= i <= ms-1:
-        u_old[i][0] = -u_old[i][1]
-        v_old[i][0] = v_WallAB
-        p_old[i][0] = p_old[i][1]
-        i += 1
+    u_old[0:ms, 0:1] = -u_old[0:ms, 1:2]
+    v_old[0:ms, 0:1] = v_WallAB
+    p_old[0:ms, 0:1] = p_old[0:ms, 1:2]
     #WallCD
-    i = 0
-    while 0 <= i <= ms-1:
-        u_old[i][n] = -u_old[i][n-1]
-        v_old[i][n-1] = v_WallCD
-        p_old[i][n] = p_old[i][n-1]
-        i += 1
+    u_old[0:ms, n:n+1] = -u_old[0:ms, n-1:n]
+    v_old[0:ms, n-1:n] = v_WallCD
+    p_old[0:ms, n:n+1] = p_old[0:ms, n-1:n]
     #BoundaryBC
-    j = 0
-    while 0 <= j <= n-1:
-        u_old[ms-1][j] = u_old[ms-2][j]
-        v_old[ms][j] = v_old[ms-1][j]
-        p_old[ms][j] = p_old[ms-1][j]
-        j += 1
+    u_old[ms-1:ms, 0:n] = u_old[ms-2:ms-1, 0:n]
+    v_old[ms:ms+1, 0:n] = v_old[ms-1:ms, 0:n]
+    p_old[ms:ms+1, 0:n] = p_old[ms-1:ms, 0:n]
 boundary_condition()
 
 #初期におけるDIV
-while 1 <= i <= ms-1:
-    while 1 <= j <= n-1:
-        DIV[i][j] = abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay)
-        j += 1
-    j = 1
-    i += 1
-
+DIV[1:ms,1:n] = np.array([abs((u_old[i][j] - u_old[i-1][j])*1.0/deltax + (v_old[i][j] - v_old[i][j-1])*1.0/deltay)] for i in range(1,ms) for j in range(1,n)])
 #初期値を出力
 t = 0
 m1 = 1
@@ -188,23 +155,9 @@ csvout()
 
 #グラフを作成して保存する
 X = np.array([[0.0] * (n+1) for i in range(ms+1)])
-i = 0
-j = 0
-while 0 <= j <= n:
-    while 0 <= i <= ms:
-        X[i][j] = deltax * (i-0.5)
-        i += 1
-    i = 0
-    j += 1
+X[0:ms+1, 0:n+1] = np.array([[deltax*(i-0.5)] for i in range(ms+1)])
 Y = np.array([[0.0] * (n+1) for i in range(ms+1)])
-i = 0
-j = 0
-while 0 <= j <= n:
-    while 0 <= i <= ms:
-        Y[i][j] = deltay * (j-0.5)
-        i += 1
-    i = 0
-    j += 1
+Y[0:ms+1, 0:n+1] = np.array([deltay*(i-0.5) for i in range(n+1)])
 X_out = X.transpose()
 Y_out = Y.transpose()
 
@@ -215,20 +168,14 @@ def graph():
     p_out = p_old.transpose()
     p_out_new = p_new.transpose()
     velocity_out = np.sqrt(u_out**2+v_out**2)
-    j = 0
-    while 0 <= j <= ms:
-        u_out[0][j] = 0
-        u_out[n][j] = 0
-        v_out[0][j] = 0
-        v_out[n][j] = 0
-        j += 1
-    i = 0
-    while 0 <= i <= n:
-        u_out[i][0] = 0
-        u_out[i][ms] = 0
-        v_out[i][0] = 0
-        v_out[i][ms] = 0
-        i += 1
+    u_out[0:1, :] = 0
+    u_out[n:n+1, :] = 0
+    v_out[0:1, :] = 0
+    v_out[n:n+1, :] = 0
+    u_out[:, 0:1] = 0
+    u_out[:, ms:ms+1] = 0
+    v_out[:, 0:1] = 0
+    v_out[:, ms:ms+1] = 0
     #ディレクトリ移動
     os.chdir(str(value[1]))
     #速度ベクトル作成
@@ -391,12 +338,8 @@ while t <= T:
         #Dmax = 0#強制的ループ終了用
 
     #ポアソン型で圧力を求める
-    m2 = 1
     Dpmax = M2 + 1
     while Dpmax > M2:
-        print str(value[1])
-        print "t = " + str(t)
-        print "m2 = " + str(m2)
         p_first = p_new
         i = 1
         j = 1
