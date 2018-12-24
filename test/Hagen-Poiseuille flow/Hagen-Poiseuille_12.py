@@ -108,19 +108,15 @@ def boundary_condition():
     #BoundaryAD
     u_old[0:1, 0:n] = u_old[1:2, 0:n]
     v_old[0:1, 0:n] = v_old[1:2, 0:n]
-    p_old[0:1, 0:n] = p_old[1:2, 0:n]
     #WallAB
     u_old[0:ms, 0:1] = -u_old[0:ms, 1:2]
     v_old[0:ms, 0:1] = v_WallAB
-    p_old[0:ms, 0:1] = p_old[0:ms, 1:2]
     #WallCD
     u_old[0:ms, n:n+1] = -u_old[0:ms, n-1:n]
     v_old[0:ms, n-1:n] = v_WallCD
-    p_old[0:ms, n:n+1] = p_old[0:ms, n-1:n]
     #BoundaryBC
     u_old[ms-1:ms, 0:n] = u_old[ms-2:ms-1, 0:n]
     v_old[ms:ms+1, 0:n] = v_old[ms-1:ms, 0:n]
-    p_old[ms:ms+1, 0:n] = p_old[ms-1:ms, 0:n]
 boundary_condition()
 
 #初期におけるDIV
