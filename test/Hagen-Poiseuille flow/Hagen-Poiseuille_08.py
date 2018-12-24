@@ -9,7 +9,7 @@ import requests
 import os
 import sys
 sys.path.append('../../../')
-from module.slackAPI import TOKEN
+from module.LineAPI import line_notify_token
 import csv
 value = sys.argv
 os.chdir('/media/pascal/HD-GDU3/Tajima_backup/EHD/result')
@@ -18,28 +18,23 @@ import time
 start_time = time.time()
 import requests
 
-#slack通知
-def slack_mention():
+#Line通知
+def LineMessage():
     process_time = time.time() - start_time
-    requests.post('https://hooks.slack.com/services/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', data = json.dumps({
-        'text': str(value[1]) + '\n' + 'process_time : ' + str(process_time), # 投稿するテキスト
-        'username': u'ghost', # 投稿のユーザー名
-        'icon_emoji': u':ghost:', # 投稿のプロフィール画像に入れる絵文字
-        'link_names': 1, # メンションを有効にする
-    }))
+    line_notify_api = 'https://notify-api.line.me/api/notify'
+    headers = {'Authorization': 'Bearer ' + line_notify_token}
+    # メッセージ
+    payload = {'message': str(value[1]) + '\n' + 'process_time : ' + str(process_time)}
+    requests.post(line_notify_api, data=payload, headers=headers)
 
-def figure_upload(A):
+def LineFigure(A):
     os.chdir(str(value[1]))
-    CHANNEL = 'CELQHE10X'
-    files = {'file': open(A, 'rb')}
-    param = {
-    'token':TOKEN,
-    'channels':CHANNEL,
-    'filename':A,
-    'initial_comment': str(value[1]) + '_' + A,
-    'title': A
-    }
-    requests.post(url="https://slack.com/api/files.upload",params=param, files=files)
+    line_notify_api = 'https://notify-api.line.me/api/notify'
+    headers = {'Authorization': 'Bearer ' + line_notify_token}
+    # メッセージ
+    payload = {'message': str(A)}
+    files = {"imageFile": open(A, 'rb')}
+    requests.post(line_notify_api, data=payload, headers=headers, files=files)
     os.chdir('../')
 
 #物性値
@@ -92,8 +87,6 @@ p_WallCD = 0.0#圧力[Pa]@wallCD
 u_old = np.array([[0.0] * (n+1) for i in range(ms+1)])#ms:x方向,n:y方向
 v_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
 p_old = np.array([[0.0] * (n+1) for i in range(ms+1)])
-p = np.array([[0.0] * (n+1) for i in range(ms+1)])
-p_old1 = np.array([[0.0] * (n+1) for i in range(ms+1)])
 
 #対流項CNVと粘性項DIF配列設定
 CNVU = np.array([[0.0] * (n+1) for i in range(ms+1)])
@@ -156,55 +149,6 @@ def boundary_condition():
         j += 1
 boundary_condition()
 
-def boundary_condition_p():
-    j = 0
-    while 0 <= j <= n-1:
-        p[0][j] = p[1][j]
-        j += 1
-    #WallAB
-    i = 0
-    while 0 <= i <= ms-1:
-        p[i][0] = p[i][1]
-        i += 1
-    #WallCD
-    i = 0
-    while 0 <= i <= ms-1:
-        p[i][n] = p[i][n-1]
-        i += 1
-    #BoundaryBC
-    j = 0
-    while 0 <= j <= n-1:
-        p[ms][j] = p[ms-1][j]
-        j += 1
-
-def p_calculation():
-    DPmax = M2 + 1
-    m2 = 1
-    while DPmax > M2:
-        print str(value[1])
-        print "t = " + str(t)
-        print "m2 = " + str(m2)
-        i = 0
-        j = 0
-        while 0 <= i <= ms:
-            while 0 <= j <= n:
-                p_old1[i][j] = p[i][j]
-                j += 1
-            j = 0
-            i += 1
-        i = 1
-        j = 1
-        while 1 <= j <= n-1:
-            while 1 <= i <= ms-1:
-                p[i][j] = 1.0 * (deltax * deltay)**2 / (2 * ((deltax**2)+(deltay**2))) * (((p[i+1][j]+p[i-1][j])/(deltax**2) + (p[i][j+1]+p[i][j-1])/(deltay**2)) + rho * (((u_old[i+1][j]-u_old[i-1][j])/(2*deltax))**2 + 2.0 * (v_old[i+1][j]-v_old[i-1][j])/(2*deltax)*(u_old[i][j+1]-u_old[i][j-1])/(2*deltay) + ((v_old[i][j+1]-v_old[i][j-1])/(2*deltay))**2))
-                i += 1
-            i = 1
-            j += 1
-        boundary_condition_p()
-        DPmax = np.max(p-p_old1)
-        print "DPmax = " + str(DPmax)
-        m2 += 1
-
 #初期におけるDIV
 while 1 <= i <= ms-1:
     while 1 <= j <= n-1:
@@ -237,9 +181,6 @@ def csvout():
     with open(os.path.join(str(value[1]),"DIV_(t="+str(t)+")"+".csv"), 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerows(DIV_out)
-    with open(os.path.join(str(value[1]),"pnew_(t="+str(t)+")"+".csv"), 'w') as file:
-        writer = csv.writer(file, lineterminator = '\n')
-        writer.writerows(p_out2)
 csvout()
 
 #グラフを作成して保存する
@@ -268,7 +209,6 @@ def graph():
     u_out = u_old.transpose()
     v_out = v_old.transpose()
     p_out = p_old.transpose()
-    p_out2 = p.transpose()
     velocity_out = np.sqrt(u_out**2+v_out**2)
     #ディレクトリ移動
     os.chdir(str(value[1]))
@@ -317,23 +257,6 @@ def graph():
         plt.savefig("pressure(t=" + str(t) +",m1="+str(m1)+ ").png", dpi=600)
     else:
         plt.savefig("pressure(t=" + str(t) + ").png", dpi=600)
-    plt.cla()
-    plt.clf()
-    plt.close()
-    #圧力分布作成2
-    plt.pcolor(X_out, Y_out, p_out2)
-    plt.colorbar()
-    plt.axis('equal')
-    plt.title('newpressure_distribution(t='+str(t)+')')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.xlim(-1.0*L/10, 11.0*L/10)
-    plt.ylim(-1.0*H/10, 11.0*H/10)
-    plt.grid()
-    ax = plt.axes()
-    r = patches.Rectangle(xy=(0, 0), width=L, height=H, ec='#000000', fill=False)
-    ax.add_patch(r)
-    plt.savefig("newpressure(t=" + str(t) + ").png", dpi=600)
     plt.cla()
     plt.clf()
     plt.close()
@@ -447,18 +370,18 @@ while t <= T:
             graph()
         m1 += 1
         #Dmax = 0#強制的ループ終了用
-    #圧力を求める
-    p_calculation()
     #csvファイルで出力
     if t == deltaT or int(t/deltaT) % 100 == 0:
         csvout()
         graph()
     if t == deltaT or int(t/deltaT) % 500 == 0:
-        figure_upload("velocity(t=" + str(t) + ").png")
-        figure_upload("pressure(t=" + str(t) + ").png")
+        LineMessage()
+        LineFigure("velocity(t=" + str(t) + ").png")
+        LineFigure("pressure(t=" + str(t) + ").png")
 
     #時間を進める
     t = t + deltaT
 print "Calculation ends"
-figure_upload("velocity(t=" + str(t) + ").png")
-figure_upload("pressure(t=" + str(t) + ").png")
+LineMessage()
+LineFigure("velocity(t=" + str(t) + ").png")
+Linefigure("pressure(t=" + str(t) + ").png")
