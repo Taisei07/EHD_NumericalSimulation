@@ -102,7 +102,7 @@ if p_BoundaryAD != p_BoundaryBC:
     #速度場設定
     u_old[0:ms, 1:n] = [1.0 / (2*nu*rho) * (-1.0*(p_BoundaryBC-p_BoundaryAD)/ L) * (1.0*(i-0.5)*deltay) * (H-(1.0*(i-0.5)*deltay)) for i in range(1,n)]
     #圧力場指定
-    p_old[0:ms+1, 0:n+1] = np.array([p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))] for i in range(ms+1)])
+    p_old[0:ms+1, 0:n+1] = np.array([[p_BoundaryAD + ((p_BoundaryAD-p_BoundaryBC)/(ms-1)*(0.5-i))] for i in range(ms+1)])
 #境界条件の設定
 def boundary_condition():
     #BoundaryAD
