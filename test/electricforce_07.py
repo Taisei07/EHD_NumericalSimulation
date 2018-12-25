@@ -603,10 +603,7 @@ def graph02():
     plt.quiver(5.0/6*L, -1.0/5*H, np.max(velocity_out)*3, 0, angles='xy', scale_units='xy', scale=np.max(velocity_out)*(0.5/(L*0.03/2)), width=0.002, headwidth=7, headlength=10, headaxislength=5)
     plt.text(5.0/6*L, -2.0/5*H, str('{:.2E}'.format(np.max(velocity_out))) + '[m/s]')
     plt.axis('equal')
-    if m2 % 10000 == 0:
-        plt.title('velocity_vector(t='+str(t)+',m2='+str(m2)+')')
-    else:
-        plt.title('velocity_vector(t='+str(t)+')')
+    plt.title('velocity_vector(t='+str(t)+')')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.xlim(-1.0*L/10, 11.0*L/10)
@@ -747,7 +744,8 @@ while t <= T:
     #圧力補正ループ
     m2 = 1
     Dmax = M1 + 1
-    while Dmax > M1:
+    while Dmax > M1 and Dmax_old != Dmax:
+        Dmax_old = Dmax
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
         print str(value[1])
         print "t = " + str(t)
@@ -783,10 +781,10 @@ while t <= T:
         m2 += 1
         #Dmax = 0#強制的ループ終了用
     #csvファイルで出力
-    if t == deltaT or int(t/deltaT) % 25 == 0:
+    if t == deltaT or int(t/deltaT) % 5 == 0:
         csvout02()
         graph02()
-    if t == deltaT or int(t/deltaT) % 50 == 0:
+    if t == deltaT or int(t/deltaT) % 5 == 0:
         LineMessage()
         LineFigure("electricalcharge(t=" + str(t) + ").png")
         LineFigure("electricalcharge(enlarge, t=" + str(t) + ").png")
