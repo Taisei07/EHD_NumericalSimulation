@@ -744,6 +744,7 @@ while t <= T:
     #圧力補正ループ
     m2 = 1
     Dmax = M1 + 1
+    Dmax_old = 0
     while Dmax > M1 and Dmax_old != Dmax:
         Dmax_old = Dmax
         #print "配列DIV内の最大値DmaxがMより大きい場合ループに入る"
