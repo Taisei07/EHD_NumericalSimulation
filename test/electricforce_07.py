@@ -54,7 +54,7 @@ T = 0.5#input("T(移流時間)[s] = ")
 deltaT = input("deltaT(時間刻み)[s] = ")
 deltax = input("deltax(x方向要素間距離)[m] = ")
 deltay = input("deltay(y方向要素間距離)[m] = ")
-omega = 0.5#input("omega(緩和係数) = ")
+omega = input("omega(緩和係数) = ")
 M1 = 0.000001#input("M1(連続の式収束条件) = ")
 M2 = 0.00000001#input("M2(電位phiの収束条件) = ")
 electrode_number = input("electrode_number(電極の数,2or4or8)[個] = ")
@@ -707,7 +707,7 @@ while t <= T:
             j += 1
         j = 1
         i += 1
-    if t == deltaT or int(t/deltaT) % 25 == 0:
+    if t == deltaT or int(t/deltaT) % 5 == 0:
         csvout01()
         graph01()
     #u_old,v_old仮値設定①粘性項・対流項配列の設定
